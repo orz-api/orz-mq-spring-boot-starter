@@ -1,4 +1,4 @@
-package orz.springboot.mq.apollo;
+package orz.springboot.kafka.apollo;
 
 import com.ctrip.framework.apollo.model.ConfigChangeEvent;
 import com.ctrip.framework.apollo.spring.annotation.ApolloConfigChangeListener;

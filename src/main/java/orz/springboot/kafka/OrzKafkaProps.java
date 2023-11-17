@@ -1,4 +1,4 @@
-package orz.springboot.mq.kafka;
+package orz.springboot.kafka;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -14,7 +14,7 @@ import org.springframework.util.backoff.BackOff;
 import org.springframework.util.backoff.ExponentialBackOff;
 import org.springframework.util.backoff.FixedBackOff;
 import org.springframework.validation.annotation.Validated;
-import orz.springboot.mq.kafka.model.OrzSubKafkaRunningChangeE1;
+import orz.springboot.kafka.model.OrzSubKafkaRunningChangeE1;
 
 import java.util.Collections;
 import java.util.HashMap;

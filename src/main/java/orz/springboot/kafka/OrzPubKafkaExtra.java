@@ -1,4 +1,4 @@
-package orz.springboot.mq.kafka;
+package orz.springboot.kafka;
 
 import lombok.Data;
 import org.apache.kafka.common.header.Headers;

@@ -1,4 +1,4 @@
-package orz.springboot.mq.kafka;
+package orz.springboot.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 

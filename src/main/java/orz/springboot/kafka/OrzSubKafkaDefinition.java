@@ -1,4 +1,4 @@
-package orz.springboot.mq.kafka;
+package orz.springboot.kafka;
 
 public class OrzSubKafkaDefinition {
     public static final String RETRY_TOPIC_POSTFIX = ".RETRY";

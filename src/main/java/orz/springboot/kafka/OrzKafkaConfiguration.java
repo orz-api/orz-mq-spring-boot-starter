@@ -1,4 +1,4 @@
-package orz.springboot.mq.kafka;
+package orz.springboot.kafka;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.common.TopicPartition;

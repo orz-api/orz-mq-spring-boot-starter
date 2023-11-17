@@ -1,4 +1,4 @@
-package orz.springboot.mq.kafka;
+package orz.springboot.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;

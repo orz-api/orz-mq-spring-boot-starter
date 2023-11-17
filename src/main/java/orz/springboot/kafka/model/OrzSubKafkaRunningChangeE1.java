@@ -1,8 +1,8 @@
-package orz.springboot.mq.kafka.model;
+package orz.springboot.kafka.model;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
-import orz.springboot.mq.kafka.OrzSubKafka;
+import orz.springboot.kafka.OrzSubKafka;
 
 @Getter
 public class OrzSubKafkaRunningChangeE1 extends ApplicationEvent {

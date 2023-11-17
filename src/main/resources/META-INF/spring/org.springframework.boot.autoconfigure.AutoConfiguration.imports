@@ -2,6 +2,6 @@ orz.springboot.mq.OrzMq
 orz.springboot.mq.OrzMqProps
 orz.springboot.mq.OrzMqBeanPostProcessor
 orz.springboot.mq.OrzPub
-orz.springboot.mq.kafka.OrzKafkaProps
-orz.springboot.mq.kafka.OrzKafkaConfiguration
-orz.springboot.mq.apollo.OrzKafkaApolloChangeListener
+orz.springboot.kafka.OrzKafkaProps
+orz.springboot.kafka.OrzKafkaConfiguration
+orz.springboot.kafka.apollo.OrzKafkaApolloChangeListener

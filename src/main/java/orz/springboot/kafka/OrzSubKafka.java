@@ -1,4 +1,4 @@
-package orz.springboot.mq.kafka;
+package orz.springboot.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -11,15 +11,15 @@ import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.util.Assert;
 import orz.springboot.mq.OrzMqBeanInitContext;
 import orz.springboot.mq.OrzSubBase;
-import orz.springboot.mq.kafka.model.OrzSubKafkaRunningChangeE1;
+import orz.springboot.kafka.model.OrzSubKafkaRunningChangeE1;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 
 import static orz.springboot.base.OrzBaseUtils.message;
-import static orz.springboot.mq.kafka.OrzSubKafkaDefinition.RETRY_GROUP_ID_HEADER;
-import static orz.springboot.mq.kafka.OrzSubKafkaDefinition.RETRY_TOPIC_POSTFIX;
+import static orz.springboot.kafka.OrzSubKafkaDefinition.RETRY_GROUP_ID_HEADER;
+import static orz.springboot.kafka.OrzSubKafkaDefinition.RETRY_TOPIC_POSTFIX;
 
 
 @Slf4j
