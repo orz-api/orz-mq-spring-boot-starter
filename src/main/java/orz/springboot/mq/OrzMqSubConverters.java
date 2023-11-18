@@ -7,7 +7,7 @@ import org.springframework.core.convert.converter.Converter;
 import javax.annotation.Nonnull;
 import java.util.Map;
 
-public class OrzSubConverters {
+public class OrzMqSubConverters {
     private static final Map<Class<?>, Converter<String, ?>> STRING_CONVERTER_MAP = Map.of(
             String.class, new StringToStringConverter(),
             Byte.class, new StringToByteConverter(),

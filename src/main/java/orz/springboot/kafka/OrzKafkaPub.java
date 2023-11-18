@@ -10,20 +10,20 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import orz.springboot.base.OrzBaseUtils;
 import orz.springboot.mq.OrzMqBeanInitContext;
-import orz.springboot.mq.OrzPubBase;
+import orz.springboot.mq.OrzMqPub;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
 
 @Getter(AccessLevel.PROTECTED)
-public abstract class OrzPubKafka<D> extends OrzPubBase<D> {
+public abstract class OrzKafkaPub<D> extends OrzMqPub<D> {
     private KafkaTemplate<String, String> kafkaTemplate;
 
-    public OrzPubKafka() {
+    public OrzKafkaPub() {
         super();
     }
 
-    public OrzPubKafka(ObjectMapper objectMapper, KafkaTemplate<String, String> kafkaTemplate) {
+    public OrzKafkaPub(ObjectMapper objectMapper, KafkaTemplate<String, String> kafkaTemplate) {
         super(objectMapper);
         this.kafkaTemplate = kafkaTemplate;
     }
@@ -42,7 +42,7 @@ public abstract class OrzPubKafka<D> extends OrzPubBase<D> {
         return publishObject(topic, message, null);
     }
 
-    protected CompletableFuture<Void> publishObject(String topic, Object message, @Nullable OrzPubKafkaExtra extra) {
+    protected CompletableFuture<Void> publishObject(String topic, Object message, @Nullable OrzKafkaPubExtra extra) {
         return publishObjectWithResult(topic, message, extra).thenRun(VOID);
     }
 
@@ -51,32 +51,32 @@ public abstract class OrzPubKafka<D> extends OrzPubBase<D> {
     }
 
     @SneakyThrows
-    protected CompletableFuture<SendResult<String, String>> publishObjectWithResult(String topic, Object message, @Nullable OrzPubKafkaExtra extra) {
+    protected CompletableFuture<SendResult<String, String>> publishObjectWithResult(String topic, Object message, @Nullable OrzKafkaPubExtra extra) {
         return publishStringWithResult(topic, getObjectMapper().writeValueAsString(message), extra);
     }
 
-    protected CompletableFuture<SendResult<String, String>> publishStringWithResult(String topic, String message, @Nullable OrzPubKafkaExtra extra) {
+    protected CompletableFuture<SendResult<String, String>> publishStringWithResult(String topic, String message, @Nullable OrzKafkaPubExtra extra) {
         if (extra == null) {
-            extra = OrzPubKafkaExtra.EMPTY;
+            extra = OrzKafkaPubExtra.EMPTY;
         }
         return this.kafkaTemplate.send(new ProducerRecord<>(
                 topic, extra.getPartition(), extra.getTimestamp(), extra.getKey(), message, extra.getHeaders()
         ));
     }
 
-    protected OrzPubKafkaExtra extraKey(String key) {
-        return OrzPubKafkaExtra.key(key);
+    protected OrzKafkaPubExtra extraKey(String key) {
+        return OrzKafkaPubExtra.key(key);
     }
 
-    protected OrzPubKafkaExtra extraPartition(int partition) {
-        return OrzPubKafkaExtra.partition(partition);
+    protected OrzKafkaPubExtra extraPartition(int partition) {
+        return OrzKafkaPubExtra.partition(partition);
     }
 
-    protected OrzPubKafkaExtra extraTimestamp(long timestamp) {
-        return OrzPubKafkaExtra.timestamp(timestamp);
+    protected OrzKafkaPubExtra extraTimestamp(long timestamp) {
+        return OrzKafkaPubExtra.timestamp(timestamp);
     }
 
-    protected OrzPubKafkaExtra extraHeaders(Headers headers) {
-        return OrzPubKafkaExtra.headers(headers);
+    protected OrzKafkaPubExtra extraHeaders(Headers headers) {
+        return OrzKafkaPubExtra.headers(headers);
     }
 }

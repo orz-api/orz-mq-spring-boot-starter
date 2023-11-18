@@ -2,10 +2,10 @@ package orz.springboot.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-public class OrzSubKafkaExtra {
+public class OrzKafkaSubExtra {
     private final ConsumerRecord<String, String> record;
 
-    public OrzSubKafkaExtra(ConsumerRecord<String, String> record) {
+    public OrzKafkaSubExtra(ConsumerRecord<String, String> record) {
         this.record = record;
     }
 

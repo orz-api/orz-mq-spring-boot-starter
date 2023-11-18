@@ -14,7 +14,7 @@ import org.springframework.util.backoff.BackOff;
 import org.springframework.util.backoff.ExponentialBackOff;
 import org.springframework.util.backoff.FixedBackOff;
 import org.springframework.validation.annotation.Validated;
-import orz.springboot.kafka.model.OrzSubKafkaRunningChangeE1;
+import orz.springboot.kafka.model.OrzKafkaSubRunningChangeE1;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,10 +45,10 @@ public class OrzKafkaProps {
     private Map<String, SubConfig> sub = Collections.emptyMap();
 
     @EventListener
-    public void onSubRunningChanged(OrzSubKafkaRunningChangeE1 event) {
+    public void onKafkaSubRunningChange(OrzKafkaSubRunningChangeE1 event) {
         var id = event.getSub().getId();
         var oldConfig = sub.get(id);
-        log.info(message("sub running changed", "id", id, "running", event.isRunning(), "oldConfig", oldConfig));
+        log.info(message("kafka sub running changed", "id", id, "running", event.isRunning(), "oldConfig", oldConfig));
         var newConfig = Optional.ofNullable(oldConfig).map(SubConfig::new).orElseGet(SubConfig::new);
         newConfig.setRunning(event.isRunning());
         var map = new HashMap<>(sub);

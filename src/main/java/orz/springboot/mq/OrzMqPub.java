@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.util.Assert;
 import orz.springboot.mq.annotation.OrzPubApi;
 
 import java.lang.reflect.ParameterizedType;
@@ -13,23 +12,25 @@ import java.util.concurrent.CompletableFuture;
 import static orz.springboot.base.OrzBaseUtils.message;
 
 @Getter(AccessLevel.PROTECTED)
-public abstract class OrzPubBase<E> {
+public abstract class OrzMqPub<E> {
     protected static final Runnable VOID = () -> {
     };
 
     private ObjectMapper objectMapper;
     private Class<E> eventType;
 
-    public OrzPubBase() {
+    public OrzMqPub() {
     }
 
-    public OrzPubBase(ObjectMapper objectMapper) {
+    public OrzMqPub(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     protected void init(OrzMqBeanInitContext context) {
         var annotation = AnnotationUtils.findAnnotation(getClass(), OrzPubApi.class);
-        Assert.notNull(annotation, message("@OrzPubApi not annotated", "beanClass", getClass()));
+        if (annotation == null) {
+            throw new RuntimeException(message("@OrzPubApi not annotated", "beanClass", getClass()));
+        }
 
         if (this.objectMapper == null) {
             this.objectMapper = context.getApplicationContext().getBean(ObjectMapper.class);

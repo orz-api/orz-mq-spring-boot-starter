@@ -14,12 +14,12 @@ import javax.annotation.Nonnull;
 
 @Slf4j
 public class OrzMqBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware, Ordered {
-    private final OrzMq mq;
+    private final OrzMqManager mqManager;
 
     private OrzMqBeanInitContext beanInitContext = new OrzMqBeanInitContext(null);
 
-    public OrzMqBeanPostProcessor(OrzMq mq) {
-        this.mq = mq;
+    public OrzMqBeanPostProcessor(OrzMqManager mqManager) {
+        this.mqManager = mqManager;
     }
 
     @Override
@@ -37,16 +37,16 @@ public class OrzMqBeanPostProcessor implements BeanPostProcessor, ApplicationCon
 
     @Override
     public Object postProcessAfterInitialization(@Nonnull Object bean, @Nonnull String beanName) throws BeansException {
-        if (bean instanceof OrzPubBase<?> pub) {
+        if (bean instanceof OrzMqPub<?> pub) {
             pub.init(beanInitContext);
-            mq.registerPub(pub);
-            var definition = new RootBeanDefinition(OrzPub.class, () -> new OrzPub<>(mq));
-            definition.setTargetType(ResolvableType.forClassWithGenerics(OrzPub.class, pub.getEventType()));
-            beanInitContext.getBeanDefinitionRegistry().registerBeanDefinition("OrzPub<" + pub.getEventType() + ">", definition);
-        } else if (bean instanceof OrzSubBase<?, ?> sub) {
+            mqManager.registerPub(pub);
+            var definition = new RootBeanDefinition(OrzMqPublisher.class, () -> new OrzMqPublisher<>(mqManager));
+            definition.setTargetType(ResolvableType.forClassWithGenerics(OrzMqPublisher.class, pub.getEventType()));
+            beanInitContext.getBeanDefinitionRegistry().registerBeanDefinition("OrzMqPublisher<" + pub.getEventType() + ">", definition);
+        } else if (bean instanceof OrzMqSub<?, ?> sub) {
             sub.init(beanInitContext);
-            mq.registerSub(sub);
-        } else if (bean instanceof OrzPub<?> pub) {
+            mqManager.registerSub(sub);
+        } else if (bean instanceof OrzMqPublisher<?> pub) {
             // 将默认生成的不带泛型的 bean 移除掉
             // 可以避免注入错误的泛型时不报错的情况
             if (beanName.equals(pub.getClass().getName())) {

@@ -38,9 +38,9 @@ dependencies {
     api("io.github.orz-api:orz-base-spring-boot-starter:0.0.1-SNAPSHOT")
 
     compileOnly("org.springframework.kafka:spring-kafka")
-    testCompileOnly("org.springframework.kafka:spring-kafka")
+    testImplementation("org.springframework.kafka:spring-kafka")
     compileOnly("com.ctrip.framework.apollo:apollo-client:2.1.0")
-    testCompileOnly("com.ctrip.framework.apollo:apollo-client:2.1.0")
+    testImplementation("com.ctrip.framework.apollo:apollo-client:2.1.0")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

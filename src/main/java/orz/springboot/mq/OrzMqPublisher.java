@@ -9,18 +9,18 @@ import java.util.concurrent.CompletableFuture;
 // 同时需要在运行时移除掉 bean 的定义，不然使用者注入错误的泛型时也不会报错
 // 移除逻辑见 OrzMqBeanPostProcessor
 @Component
-public class OrzPub<E> {
-    private final OrzMq mq;
+public class OrzMqPublisher<E> {
+    private final OrzMqManager mqManager;
 
-    public OrzPub(OrzMq mq) {
-        this.mq = mq;
+    public OrzMqPublisher(OrzMqManager mqManager) {
+        this.mqManager = mqManager;
     }
 
     public void publish(E event) {
-        mq.publish(event);
+        mqManager.publish(event);
     }
 
     public CompletableFuture<Void> publishAsync(E event) {
-        return mq.publishAsync(event);
+        return mqManager.publishAsync(event);
     }
 }

@@ -2,24 +2,24 @@ package orz.springboot.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
-import org.springframework.util.Assert;
+import orz.springboot.kafka.model.OrzKafkaSubRunningChangeE1;
 import orz.springboot.mq.OrzMqBeanInitContext;
-import orz.springboot.mq.OrzSubBase;
-import orz.springboot.kafka.model.OrzSubKafkaRunningChangeE1;
+import orz.springboot.mq.OrzMqSub;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 
 import static orz.springboot.base.OrzBaseUtils.message;
-import static orz.springboot.kafka.OrzSubKafkaDefinition.RETRY_GROUP_ID_HEADER;
-import static orz.springboot.kafka.OrzSubKafkaDefinition.RETRY_TOPIC_POSTFIX;
+import static orz.springboot.kafka.OrzKafkaDefinition.RETRY_GROUP_ID_HEADER;
+import static orz.springboot.kafka.OrzKafkaDefinition.RETRY_TOPIC_POSTFIX;
 
 
 @Slf4j
@@ -33,7 +33,7 @@ import static orz.springboot.kafka.OrzSubKafkaDefinition.RETRY_TOPIC_POSTFIX;
         concurrency = "#{__listener.concurrency}",
         autoStartup = "#{__listener.autoStartup}"
 )
-public abstract class OrzSubKafka<T> extends OrzSubBase<T, OrzSubKafkaExtra> {
+public abstract class OrzKafkaSub<T> extends OrzMqSub<T, OrzKafkaSubExtra> {
     private ApplicationEventPublisher publisher;
     private KafkaListenerEndpointRegistry registry;
     private String groupId;
@@ -41,11 +41,11 @@ public abstract class OrzSubKafka<T> extends OrzSubBase<T, OrzSubKafkaExtra> {
     private Integer concurrency;
     private Boolean autoStartup;
 
-    public OrzSubKafka() {
+    public OrzKafkaSub() {
         super();
     }
 
-    public OrzSubKafka(ObjectMapper objectMapper) {
+    public OrzKafkaSub(ObjectMapper objectMapper) {
         super(objectMapper);
     }
 
@@ -76,28 +76,32 @@ public abstract class OrzSubKafka<T> extends OrzSubBase<T, OrzSubKafkaExtra> {
                 return;
             }
         }
-        onSubscribe(convertStringMessage(record.value()), new OrzSubKafkaExtra(record));
+        onSubscribe(convertStringMessage(record.value()), new OrzKafkaSubExtra(record));
     }
 
     @Override
     public void start() {
         var container = registry.getListenerContainer(getId());
-        Assert.notNull(container, message("container is null", "id", getId()));
+        if (container == null) {
+            throw new RuntimeException(message("listener container is null", "id", getId()));
+        }
         if (!container.isRunning()) {
-            log.info(message("sub start", "id", getId()));
+            log.info(message("kafka sub start", "id", getId()));
             container.start();
-            publisher.publishEvent(new OrzSubKafkaRunningChangeE1(this, true));
+            publisher.publishEvent(new OrzKafkaSubRunningChangeE1(this, true));
         }
     }
 
     @Override
     public void stop() {
         var container = registry.getListenerContainer(getId());
-        Assert.notNull(container, message("container is null", "id", getId()));
+        if (container == null) {
+            throw new RuntimeException(message("listener container is null", "id", getId()));
+        }
         if (container.isRunning()) {
-            log.info(message("sub stop", "id", getId()));
+            log.info(message("kafka sub stop", "id", getId()));
             container.stop();
-            publisher.publishEvent(new OrzSubKafkaRunningChangeE1(this, false));
+            publisher.publishEvent(new OrzKafkaSubRunningChangeE1(this, false));
         }
     }
 
@@ -109,6 +113,9 @@ public abstract class OrzSubKafka<T> extends OrzSubBase<T, OrzSubKafkaExtra> {
         var groupPrefix = kafkaProperties.getConsumer().getGroupId();
         if (groupPrefix == null) {
             groupPrefix = context.getApplicationContext().getEnvironment().getProperty("spring.application.name");
+        }
+        if (StringUtils.isBlank(groupPrefix)) {
+            throw new RuntimeException(message("kafka consumer group prefix is blank"));
         }
 
         this.publisher = context.getApplicationContext();

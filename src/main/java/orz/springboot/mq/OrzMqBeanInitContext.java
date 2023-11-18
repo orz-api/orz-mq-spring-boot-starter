@@ -39,7 +39,7 @@ public class OrzMqBeanInitContext {
         } else if (result instanceof Boolean) {
             return result.toString();
         }
-        throw new IllegalArgumentException(message(
+        throw new RuntimeException(message(
                 "resolve expression as string failed",
                 "value", value, "result", result, "resultClass", result.getClass()
         ));

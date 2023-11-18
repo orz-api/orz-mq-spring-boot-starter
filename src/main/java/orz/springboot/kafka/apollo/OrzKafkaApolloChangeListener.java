@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
-import orz.springboot.mq.OrzMq;
+import orz.springboot.mq.OrzMqManager;
 
 import java.util.regex.Pattern;
 
@@ -18,10 +18,10 @@ import static orz.springboot.base.OrzBaseUtils.message;
 public class OrzKafkaApolloChangeListener {
     private final static Pattern SUB_RUNNING_PATTERN = Pattern.compile("^orz\\.kafka\\.sub\\.(?<id>[^.]+)\\.running$");
 
-    private final OrzMq mq;
+    private final OrzMqManager mqManager;
 
-    public OrzKafkaApolloChangeListener(OrzMq mq) {
-        this.mq = mq;
+    public OrzKafkaApolloChangeListener(OrzMqManager mqManager) {
+        this.mqManager = mqManager;
     }
 
     @ApolloConfigChangeListener(interestedKeyPrefixes = "orz.kafka.sub.")
@@ -32,13 +32,13 @@ public class OrzKafkaApolloChangeListener {
             }
             var matcher = SUB_RUNNING_PATTERN.matcher(key);
             if (matcher.matches()) {
-                log.info(message("apollo config sub running changed", "key", key, "value", event.getChange(key).getNewValue()));
+                log.info(message("apollo config kafka sub running changed", "key", key, "value", event.getChange(key).getNewValue()));
                 var id = matcher.group("id");
                 var running = Boolean.parseBoolean(event.getChange(key).getNewValue());
                 if (running) {
-                    mq.startSub(id);
+                    mqManager.startSub(id);
                 } else {
-                    mq.stopSub(id);
+                    mqManager.stopSub(id);
                 }
             }
         }
