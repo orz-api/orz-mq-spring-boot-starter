@@ -43,5 +43,5 @@ public abstract class OrzMqPub<E> {
         return (Class<E>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
-    protected abstract CompletableFuture<Void> onPublish(E event);
+    protected abstract CompletableFuture<Void> publish(E event);
 }

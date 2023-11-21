@@ -76,7 +76,7 @@ public abstract class OrzKafkaSub<T> extends OrzMqSub<T, OrzKafkaSubExtra> {
                 return;
             }
         }
-        onSubscribe(convertStringMessage(record.value()), new OrzKafkaSubExtra(record));
+        subscribe(convertStringMessage(record.value()), new OrzKafkaSubExtra(record));
     }
 
     @Override

@@ -60,6 +60,6 @@ public class OrzMqManager {
         if (pub == null) {
             throw new RuntimeException(message("pub not found", "eventType", event.getClass()));
         }
-        return pub.onPublish(event);
+        return pub.publish(event);
     }
 }

@@ -85,5 +85,5 @@ public abstract class OrzMqSub<M, E> {
         return OrzMqSubConverters.obtainStringConverter(objectMapper, messageType);
     }
 
-    protected abstract void onSubscribe(M message, E extra);
+    protected abstract void subscribe(M message, E extra);
 }
