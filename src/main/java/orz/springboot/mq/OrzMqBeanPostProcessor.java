@@ -1,6 +1,5 @@
 package orz.springboot.mq;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -9,10 +8,11 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.core.ResolvableType;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 
-@Slf4j
+@Component
 public class OrzMqBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware, Ordered {
     private final OrzMqManager mqManager;
 
