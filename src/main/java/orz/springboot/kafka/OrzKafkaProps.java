@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static orz.springboot.base.OrzBaseUtils.message;
+import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 
 @Slf4j
 @Data
@@ -48,7 +48,7 @@ public class OrzKafkaProps {
     public void onKafkaSubRunningChange(OrzKafkaSubRunningChangeE1 event) {
         var id = event.getSub().getId();
         var oldConfig = sub.get(id);
-        log.info(message("kafka sub running changed", "id", id, "running", event.isRunning(), "oldConfig", oldConfig));
+        log.info(desc("kafka sub running changed", "id", id, "running", event.isRunning(), "oldConfig", oldConfig));
         var newConfig = Optional.ofNullable(oldConfig).map(SubConfig::new).orElseGet(SubConfig::new);
         newConfig.setRunning(event.isRunning());
         var map = new HashMap<>(sub);

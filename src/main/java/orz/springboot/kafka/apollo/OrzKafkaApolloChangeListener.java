@@ -10,7 +10,8 @@ import orz.springboot.mq.OrzMqManager;
 
 import java.util.regex.Pattern;
 
-import static orz.springboot.base.OrzBaseUtils.message;
+import static orz.springboot.base.description.OrzDescriptionUtils.desc;
+
 
 @Slf4j
 @Component
@@ -28,11 +29,11 @@ public class OrzKafkaApolloChangeListener {
     private void onSubRunningChanged(ConfigChangeEvent event) {
         for (var key : event.changedKeys()) {
             if (log.isDebugEnabled()) {
-                log.debug(message("apollo config changed", "key", key, "value", event.getChange(key).getNewValue()));
+                log.debug(desc("apollo config changed", "key", key, "value", event.getChange(key).getNewValue()));
             }
             var matcher = SUB_RUNNING_PATTERN.matcher(key);
             if (matcher.matches()) {
-                log.info(message("apollo config kafka sub running changed", "key", key, "value", event.getChange(key).getNewValue()));
+                log.info(desc("apollo config kafka sub running changed", "key", key, "value", event.getChange(key).getNewValue()));
                 var id = matcher.group("id");
                 var running = Boolean.parseBoolean(event.getChange(key).getNewValue());
                 if (running) {

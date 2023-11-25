@@ -3,13 +3,14 @@ package orz.springboot.mq;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.Getter;
+import org.springframework.beans.FatalBeanException;
 import org.springframework.core.annotation.AnnotationUtils;
 import orz.springboot.mq.annotation.OrzPubApi;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.concurrent.CompletableFuture;
 
-import static orz.springboot.base.OrzBaseUtils.message;
+import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 
 @Getter(AccessLevel.PROTECTED)
 public abstract class OrzMqPub<E> {
@@ -29,7 +30,7 @@ public abstract class OrzMqPub<E> {
     protected void init(OrzMqBeanInitContext context) {
         var annotation = AnnotationUtils.findAnnotation(getClass(), OrzPubApi.class);
         if (annotation == null) {
-            throw new RuntimeException(message("@OrzPubApi not annotated", "beanClass", getClass()));
+            throw new FatalBeanException(desc("@OrzPubApi not annotated", "beanClass", getClass()));
         }
 
         if (this.objectMapper == null) {

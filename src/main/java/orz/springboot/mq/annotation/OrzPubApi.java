@@ -1,6 +1,7 @@
 package orz.springboot.mq.annotation;
 
 import org.springframework.stereotype.Component;
+import orz.springboot.base.annotation.OrzFullyQualifier;
 
 import java.lang.annotation.*;
 
@@ -8,5 +9,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Component
+@OrzFullyQualifier
 public @interface OrzPubApi {
 }

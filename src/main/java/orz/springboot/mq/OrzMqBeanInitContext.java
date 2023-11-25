@@ -7,7 +7,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.expression.StandardBeanExpressionResolver;
 import orz.springboot.base.OrzBaseUtils;
 
-import static orz.springboot.base.OrzBaseUtils.message;
+import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 
 public class OrzMqBeanInitContext {
     private final ConfigurableApplicationContext context;
@@ -39,7 +39,7 @@ public class OrzMqBeanInitContext {
         } else if (result instanceof Boolean) {
             return result.toString();
         }
-        throw new RuntimeException(message(
+        throw new RuntimeException(desc(
                 "resolve expression as string failed",
                 "value", value, "result", result, "resultClass", result.getClass()
         ));

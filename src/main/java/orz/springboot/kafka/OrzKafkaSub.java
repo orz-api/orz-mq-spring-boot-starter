@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.beans.FatalBeanException;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.annotation.KafkaHandler;
@@ -17,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 
-import static orz.springboot.base.OrzBaseUtils.message;
+import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 import static orz.springboot.kafka.OrzKafkaDefinition.RETRY_GROUP_ID_HEADER;
 import static orz.springboot.kafka.OrzKafkaDefinition.RETRY_TOPIC_POSTFIX;
 
@@ -72,7 +73,7 @@ public abstract class OrzKafkaSub<T> extends OrzMqSub<T, OrzKafkaSubExtra> {
                     .map(header -> new String(header.value(), StandardCharsets.UTF_8))
                     .orElse(null);
             if (!Objects.equals(retryGroupId, getGroupId())) {
-                log.info(message("discard retry record", "groupId", getGroupId(), "retryGroupId", retryGroupId));
+                log.info(desc("discard retry record", "groupId", getGroupId(), "retryGroupId", retryGroupId));
                 return;
             }
         }
@@ -83,10 +84,10 @@ public abstract class OrzKafkaSub<T> extends OrzMqSub<T, OrzKafkaSubExtra> {
     public void start() {
         var container = registry.getListenerContainer(getId());
         if (container == null) {
-            throw new RuntimeException(message("listener container is null", "id", getId()));
+            throw new RuntimeException(desc("listener container is null", "id", getId()));
         }
         if (!container.isRunning()) {
-            log.info(message("kafka sub start", "id", getId()));
+            log.info(desc("kafka sub start", "id", getId()));
             container.start();
             publisher.publishEvent(new OrzKafkaSubRunningChangeE1(this, true));
         }
@@ -96,10 +97,10 @@ public abstract class OrzKafkaSub<T> extends OrzMqSub<T, OrzKafkaSubExtra> {
     public void stop() {
         var container = registry.getListenerContainer(getId());
         if (container == null) {
-            throw new RuntimeException(message("listener container is null", "id", getId()));
+            throw new RuntimeException(desc("listener container is null", "id", getId()));
         }
         if (container.isRunning()) {
-            log.info(message("kafka sub stop", "id", getId()));
+            log.info(desc("kafka sub stop", "id", getId()));
             container.stop();
             publisher.publishEvent(new OrzKafkaSubRunningChangeE1(this, false));
         }
@@ -115,7 +116,7 @@ public abstract class OrzKafkaSub<T> extends OrzMqSub<T, OrzKafkaSubExtra> {
             groupPrefix = context.getApplicationContext().getEnvironment().getProperty("spring.application.name");
         }
         if (StringUtils.isBlank(groupPrefix)) {
-            throw new RuntimeException(message("kafka consumer group prefix is blank"));
+            throw new FatalBeanException(desc("kafka consumer group prefix is blank"));
         }
 
         this.publisher = context.getApplicationContext();
