@@ -5,11 +5,11 @@ import org.springframework.context.ApplicationEvent;
 import orz.springboot.kafka.OrzKafkaSub;
 
 @Getter
-public class OrzKafkaSubRunningChangeE1 extends ApplicationEvent {
+public class OrzKafkaSubRunningChangeEventBo extends ApplicationEvent {
     private final OrzKafkaSub<?> sub;
     private final boolean running;
 
-    public OrzKafkaSubRunningChangeE1(OrzKafkaSub<?> sub, boolean running) {
+    public OrzKafkaSubRunningChangeEventBo(OrzKafkaSub<?> sub, boolean running) {
         super(sub);
         this.sub = sub;
         this.running = running;

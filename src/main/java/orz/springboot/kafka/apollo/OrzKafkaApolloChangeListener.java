@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 
 import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 
-
 @Slf4j
 @Component
 @ConditionalOnClass({KafkaTemplate.class, ApolloConfigChangeListener.class})

@@ -10,7 +10,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
-import orz.springboot.kafka.model.OrzKafkaSubRunningChangeE1;
+import orz.springboot.kafka.model.OrzKafkaSubRunningChangeEventBo;
 import orz.springboot.mq.OrzMqBeanInitContext;
 import orz.springboot.mq.OrzMqSub;
 
@@ -21,7 +21,6 @@ import java.util.Optional;
 import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 import static orz.springboot.kafka.OrzKafkaDefinition.RETRY_GROUP_ID_HEADER;
 import static orz.springboot.kafka.OrzKafkaDefinition.RETRY_TOPIC_POSTFIX;
-
 
 @Slf4j
 @KafkaListener(
@@ -89,7 +88,7 @@ public abstract class OrzKafkaSub<T> extends OrzMqSub<T, OrzKafkaSubExtra> {
         if (!container.isRunning()) {
             log.info(desc("kafka sub start", "id", getId()));
             container.start();
-            publisher.publishEvent(new OrzKafkaSubRunningChangeE1(this, true));
+            publisher.publishEvent(new OrzKafkaSubRunningChangeEventBo(this, true));
         }
     }
 
@@ -102,7 +101,7 @@ public abstract class OrzKafkaSub<T> extends OrzMqSub<T, OrzKafkaSubExtra> {
         if (container.isRunning()) {
             log.info(desc("kafka sub stop", "id", getId()));
             container.stop();
-            publisher.publishEvent(new OrzKafkaSubRunningChangeE1(this, false));
+            publisher.publishEvent(new OrzKafkaSubRunningChangeEventBo(this, false));
         }
     }
 
