@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import orz.springboot.alarm.exception.OrzAlarmException;
 import orz.springboot.kafka.model.OrzKafkaSubRunningChangeEventBo;
 import orz.springboot.mq.OrzMqBeanInitContext;
 import orz.springboot.mq.OrzMqSub;
@@ -18,9 +19,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 
+import static orz.springboot.alarm.OrzAlarmUtils.alarm;
 import static orz.springboot.base.description.OrzDescriptionUtils.desc;
-import static orz.springboot.kafka.OrzKafkaDefinition.RETRY_GROUP_ID_HEADER;
-import static orz.springboot.kafka.OrzKafkaDefinition.RETRY_TOPIC_POSTFIX;
+import static orz.springboot.kafka.OrzKafkaConstants.RETRY_GROUP_ID_HEADER;
+import static orz.springboot.kafka.OrzKafkaConstants.RETRY_TOPIC_POSTFIX;
 
 @Slf4j
 @KafkaListener(
@@ -76,7 +78,12 @@ public abstract class OrzKafkaSub<T> extends OrzMqSub<T, OrzKafkaSubExtra> {
                 return;
             }
         }
-        subscribe(convertStringMessage(record.value()), new OrzKafkaSubExtra(record));
+        try {
+            subscribe(convertStringMessage(record.value()), new OrzKafkaSubExtra(record));
+        } catch (OrzAlarmException e) {
+            alarm(e, e);
+            throw e;
+        }
     }
 
     @Override
