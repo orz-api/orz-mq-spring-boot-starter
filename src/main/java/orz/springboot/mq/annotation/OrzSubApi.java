@@ -1,7 +1,6 @@
 package orz.springboot.mq.annotation;
 
 import org.springframework.stereotype.Component;
-import orz.springboot.base.annotation.OrzFullyQualifier;
 
 import java.lang.annotation.*;
 
@@ -9,12 +8,14 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Component
-@OrzFullyQualifier
 public @interface OrzSubApi {
     String FIELD_ID = "id";
     String FIELD_TOPIC = "topic";
+    String FIELD_PRIMARY = "primary";
 
     String id();
 
     String topic();
+
+    boolean primary() default true;
 }

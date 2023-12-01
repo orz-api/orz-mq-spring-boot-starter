@@ -11,16 +11,19 @@ import orz.springboot.mq.annotation.OrzSubApi;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 
 @Getter(AccessLevel.PROTECTED)
 public abstract class OrzMqSub<M, E> {
     private ObjectMapper objectMapper;
-    private Class<M> messageType;
-    private Converter<String, M> stringMessageConverter;
+    private Class<M> msgType;
+    private Converter<String, M> msgStringConverter;
     private String id;
     private String topic;
+    private Boolean primary;
 
     public OrzMqSub() {
     }
@@ -35,6 +38,10 @@ public abstract class OrzMqSub<M, E> {
 
     public final String getTopic() {
         return Objects.requireNonNull(topic);
+    }
+
+    public final boolean isPrimary() {
+        return Objects.requireNonNull(primary);
     }
 
     public abstract void start();
@@ -55,36 +62,45 @@ public abstract class OrzMqSub<M, E> {
             throw new FatalBeanException(desc("@OrzSubApi field missing", "beanClass", getClass(), "field", OrzSubApi.FIELD_TOPIC));
         }
 
-        var id = context.resolveExpressionAsString((String) attributes.get(OrzSubApi.FIELD_ID));
+        var id = (String) attributes.get(OrzSubApi.FIELD_ID);
         if (StringUtils.isBlank(id)) {
             throw new FatalBeanException(desc("@OrzSubApi id is blank", "beanClass", getClass()));
+        }
+        var expectClassName = Stream.of(id.split("-")).map(StringUtils::capitalize).collect(Collectors.joining()) + "Api";
+        if (!expectClassName.equals(getClass().getSimpleName())) {
+            throw new FatalBeanException(desc("@OrzSubApi class name is invalid", "beanClass", getClass().getSimpleName(), "expectClassName", expectClassName));
         }
         var topic = context.resolveExpressionAsString((String) attributes.get(OrzSubApi.FIELD_TOPIC));
         if (StringUtils.isBlank(topic)) {
             throw new FatalBeanException(desc("@OrzSubApi topic is blank", "beanClass", getClass()));
         }
+        var primary = (Boolean) attributes.getOrDefault(OrzSubApi.FIELD_PRIMARY, true);
+        if (primary == null) {
+            throw new FatalBeanException(desc("@OrzSubApi primary is null", "beanClass", getClass()));
+        }
 
         if (this.objectMapper == null) {
             this.objectMapper = context.getApplicationContext().getBean(ObjectMapper.class);
         }
-        this.messageType = obtainMessageType();
-        this.stringMessageConverter = obtainStringMessageConverter();
+        this.msgType = obtainMsgType();
+        this.msgStringConverter = obtainMsgStringConverter();
         this.id = id;
         this.topic = topic;
+        this.primary = primary;
     }
 
-    protected M convertStringMessage(String message) {
-        return this.stringMessageConverter.convert(message);
+    protected M convertMsg(String msg) {
+        return this.msgStringConverter.convert(msg);
     }
 
-    protected Class<M> obtainMessageType() {
+    protected Class<M> obtainMsgType() {
         // noinspection unchecked
         return (Class<M>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
-    protected Converter<String, M> obtainStringMessageConverter() {
-        return OrzMqSubConverters.obtainStringConverter(objectMapper, messageType);
+    protected Converter<String, M> obtainMsgStringConverter() {
+        return OrzMqSubConverters.obtainStringConverter(objectMapper, msgType);
     }
 
-    protected abstract void subscribe(M message, E extra);
+    protected abstract void subscribe(M msg, E extra);
 }

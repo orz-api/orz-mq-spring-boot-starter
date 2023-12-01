@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
 
 @Getter(AccessLevel.PROTECTED)
-public abstract class OrzKafkaPub<D> extends OrzMqPub<D> {
+public abstract class OrzKafkaPub<E> extends OrzMqPub<E> {
     private KafkaTemplate<String, String> kafkaTemplate;
 
     public OrzKafkaPub() {
@@ -38,29 +38,29 @@ public abstract class OrzKafkaPub<D> extends OrzMqPub<D> {
         }
     }
 
-    protected CompletableFuture<Void> publishObject(String topic, Object message) {
-        return publishObject(topic, message, null);
+    protected CompletableFuture<Void> publishObject(String topic, Object msg) {
+        return publishObject(topic, msg, null);
     }
 
-    protected CompletableFuture<Void> publishObject(String topic, Object message, @Nullable OrzKafkaPubExtra extra) {
-        return publishObjectWithResult(topic, message, extra).thenRun(VOID);
+    protected CompletableFuture<Void> publishObject(String topic, Object msg, @Nullable OrzKafkaPubExtra extra) {
+        return publishObjectWithResult(topic, msg, extra).thenRun(VOID);
     }
 
-    protected CompletableFuture<Void> publishString(String topic, String message) {
-        return publishStringWithResult(topic, message, null).thenRun(VOID);
+    protected CompletableFuture<Void> publishString(String topic, String msg) {
+        return publishStringWithResult(topic, msg, null).thenRun(VOID);
     }
 
     @SneakyThrows
-    protected CompletableFuture<SendResult<String, String>> publishObjectWithResult(String topic, Object message, @Nullable OrzKafkaPubExtra extra) {
-        return publishStringWithResult(topic, getObjectMapper().writeValueAsString(message), extra);
+    protected CompletableFuture<SendResult<String, String>> publishObjectWithResult(String topic, Object msg, @Nullable OrzKafkaPubExtra extra) {
+        return publishStringWithResult(topic, getObjectMapper().writeValueAsString(msg), extra);
     }
 
-    protected CompletableFuture<SendResult<String, String>> publishStringWithResult(String topic, String message, @Nullable OrzKafkaPubExtra extra) {
+    protected CompletableFuture<SendResult<String, String>> publishStringWithResult(String topic, String msg, @Nullable OrzKafkaPubExtra extra) {
         if (extra == null) {
             extra = OrzKafkaPubExtra.EMPTY;
         }
         return this.kafkaTemplate.send(new ProducerRecord<>(
-                topic, extra.getPartition(), extra.getTimestamp(), extra.getKey(), message, extra.getHeaders()
+                topic, extra.getPartition(), extra.getTimestamp(), extra.getKey(), msg, extra.getHeaders()
         ));
     }
 

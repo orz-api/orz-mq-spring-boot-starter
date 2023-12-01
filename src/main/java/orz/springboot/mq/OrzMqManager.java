@@ -1,6 +1,7 @@
 package orz.springboot.mq;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.FatalBeanException;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -13,20 +14,41 @@ import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 @Component
 public class OrzMqManager {
     private final Map<String, OrzMqSub<?, ?>> subMap = new HashMap<>();
+    private final Map<String, OrzMqSub<?, ?>> primarySubMap = new HashMap<>();
     private final Map<Class<?>, OrzMqPub<?>> pubMap = new HashMap<>();
 
-    public void registerSub(OrzMqSub<?, ?> sub) {
+    public synchronized void registerSub(OrzMqSub<?, ?> sub) {
         assertion(sub != null, "sub != null");
-        if (subMap.containsKey(sub.getId())) {
-            throw new RuntimeException(desc("sub already exists", "id", sub.getId()));
+        var exists = subMap.get(sub.getId());
+        if (exists == sub) {
+            return;
+        }
+        if (exists != null) {
+            throw new FatalBeanException(desc("sub already exists", "id", sub.getId(), "sub", sub.getClass().getName(), "exists", exists.getClass().getName()));
+        }
+        if (sub.isPrimary()) {
+            var existsPrimarySub = primarySubMap.get(sub.getTopic());
+            if (existsPrimarySub == sub) {
+                return;
+            }
+            if (existsPrimarySub != null) {
+                throw new FatalBeanException(desc("primary sub already exists", "topic", sub.getTopic(), "sub", sub.getClass().getName(), "exists", existsPrimarySub.getClass().getName()));
+            }
         }
         subMap.put(sub.getId(), sub);
+        if (sub.isPrimary()) {
+            primarySubMap.put(sub.getTopic(), sub);
+        }
     }
 
-    public void registerPub(OrzMqPub<?> pub) {
+    public synchronized void registerPub(OrzMqPub<?> pub) {
         assertion(pub != null, "pub != null");
-        if (pubMap.containsKey(pub.getEventType())) {
-            throw new RuntimeException(desc("pub already exists", "eventType", pub.getEventType()));
+        var exists = pubMap.get(pub.getEventType());
+        if (exists == pub) {
+            return;
+        }
+        if (exists != null) {
+            throw new FatalBeanException(desc("pub already exists", "eventType", pub.getEventType().getName(), "pub", pub.getClass().getName(), "exists", exists.getClass().getName()));
         }
         pubMap.put(pub.getEventType(), pub);
     }

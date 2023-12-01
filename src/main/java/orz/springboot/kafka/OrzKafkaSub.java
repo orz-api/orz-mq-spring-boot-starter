@@ -35,7 +35,7 @@ import static orz.springboot.kafka.OrzKafkaConstants.RETRY_TOPIC_POSTFIX;
         concurrency = "#{__listener.concurrency}",
         autoStartup = "#{__listener.autoStartup}"
 )
-public abstract class OrzKafkaSub<T> extends OrzMqSub<T, OrzKafkaSubExtra> {
+public abstract class OrzKafkaSub<M> extends OrzMqSub<M, OrzKafkaSubExtra> {
     private ApplicationEventPublisher publisher;
     private KafkaListenerEndpointRegistry registry;
     private String groupId;
@@ -79,7 +79,7 @@ public abstract class OrzKafkaSub<T> extends OrzMqSub<T, OrzKafkaSubExtra> {
             }
         }
         try {
-            subscribe(convertStringMessage(record.value()), new OrzKafkaSubExtra(record));
+            subscribe(convertMsg(record.value()), new OrzKafkaSubExtra(record));
         } catch (OrzAlarmException e) {
             alarm(e, e);
             throw e;
@@ -117,17 +117,17 @@ public abstract class OrzKafkaSub<T> extends OrzMqSub<T, OrzKafkaSubExtra> {
         super.init(context);
         var props = context.getApplicationContext().getBean(OrzKafkaProps.class);
         var kafkaProperties = context.getApplicationContext().getBean(KafkaProperties.class);
-        var groupPrefix = kafkaProperties.getConsumer().getGroupId();
-        if (groupPrefix == null) {
-            groupPrefix = context.getApplicationContext().getEnvironment().getProperty("spring.application.name");
+        var consumerGroup = kafkaProperties.getConsumer().getGroupId();
+        if (consumerGroup == null) {
+            consumerGroup = context.getApplicationContext().getEnvironment().getProperty("spring.application.name");
         }
-        if (StringUtils.isBlank(groupPrefix)) {
-            throw new FatalBeanException(desc("kafka consumer group prefix is blank"));
+        if (StringUtils.isBlank(consumerGroup)) {
+            throw new FatalBeanException(desc("kafka consumer group is blank"));
         }
 
         this.publisher = context.getApplicationContext();
         this.registry = context.getApplicationContext().getBean(KafkaListenerEndpointRegistry.class);
-        this.groupId = groupPrefix + "." + getId();
+        this.groupId = isPrimary() ? consumerGroup : consumerGroup + "." + getId();
         this.retryTopic = getTopic() + RETRY_TOPIC_POSTFIX;
         this.concurrency = Optional.ofNullable(props.getSub().get(getId())).map(OrzKafkaProps.SubConfig::getConcurrency).orElse(kafkaProperties.getListener().getConcurrency());
         this.autoStartup = Optional.ofNullable(props.getSub().get(getId())).map(OrzKafkaProps.SubConfig::isRunning).orElse(kafkaProperties.getListener().isAutoStartup());

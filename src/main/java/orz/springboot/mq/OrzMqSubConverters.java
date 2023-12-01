@@ -19,10 +19,10 @@ public class OrzMqSubConverters {
             Double.class, new StringToDoubleConverter()
     );
 
-    public static <T> Converter<String, T> obtainStringConverter(ObjectMapper objectMapper, Class<T> messageType) {
-        var converter = STRING_CONVERTER_MAP.get(messageType);
+    public static <T> Converter<String, T> obtainStringConverter(ObjectMapper objectMapper, Class<T> msgType) {
+        var converter = STRING_CONVERTER_MAP.get(msgType);
         if (converter == null) {
-            converter = new StringToObjectConverter(objectMapper, messageType);
+            converter = new StringToObjectConverter(objectMapper, msgType);
         }
         // noinspection unchecked
         return (Converter<String, T>) converter;
@@ -30,73 +30,73 @@ public class OrzMqSubConverters {
 
     public static class StringToStringConverter implements Converter<String, String> {
         @Override
-        public String convert(@Nonnull String message) {
-            return message;
+        public String convert(@Nonnull String msg) {
+            return msg;
         }
     }
 
     public static class StringToByteConverter implements Converter<String, Byte> {
         @Override
-        public Byte convert(@Nonnull String message) {
-            return Byte.valueOf(message);
+        public Byte convert(@Nonnull String msg) {
+            return Byte.valueOf(msg);
         }
     }
 
     public static class StringToShortConverter implements Converter<String, Short> {
         @Override
-        public Short convert(@Nonnull String message) {
-            return Short.valueOf(message);
+        public Short convert(@Nonnull String msg) {
+            return Short.valueOf(msg);
         }
     }
 
     public static class StringToIntegerConverter implements Converter<String, Integer> {
         @Override
-        public Integer convert(@Nonnull String message) {
-            return Integer.valueOf(message);
+        public Integer convert(@Nonnull String msg) {
+            return Integer.valueOf(msg);
         }
     }
 
     public static class StringToLongConverter implements Converter<String, Long> {
         @Override
-        public Long convert(@Nonnull String message) {
-            return Long.valueOf(message);
+        public Long convert(@Nonnull String msg) {
+            return Long.valueOf(msg);
         }
     }
 
     public static class StringToBooleanConverter implements Converter<String, Boolean> {
         @Override
-        public Boolean convert(@Nonnull String message) {
-            return Boolean.valueOf(message);
+        public Boolean convert(@Nonnull String msg) {
+            return Boolean.valueOf(msg);
         }
     }
 
     public static class StringToFloatConverter implements Converter<String, Float> {
         @Override
-        public Float convert(@Nonnull String message) {
-            return Float.valueOf(message);
+        public Float convert(@Nonnull String msg) {
+            return Float.valueOf(msg);
         }
     }
 
     public static class StringToDoubleConverter implements Converter<String, Double> {
         @Override
-        public Double convert(@Nonnull String message) {
-            return Double.valueOf(message);
+        public Double convert(@Nonnull String msg) {
+            return Double.valueOf(msg);
         }
     }
 
     public static class StringToObjectConverter implements Converter<String, Object> {
         private final ObjectMapper objectMapper;
-        private final Class<?> messageType;
+        private final Class<?> msgType;
 
-        public StringToObjectConverter(ObjectMapper objectMapper, Class<?> messageType) {
+        public StringToObjectConverter(ObjectMapper objectMapper, Class<?> msgType) {
             this.objectMapper = objectMapper;
-            this.messageType = messageType;
+            this.msgType = msgType;
         }
 
         @Override
         @SneakyThrows
-        public Object convert(@Nonnull String message) {
-            return objectMapper.readValue(message, messageType);
+        public Object convert(@Nonnull String msg) {
+            return objectMapper.readValue(msg, msgType);
         }
     }
 }
