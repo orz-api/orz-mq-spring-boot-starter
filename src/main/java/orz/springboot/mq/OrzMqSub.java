@@ -11,8 +11,6 @@ import orz.springboot.mq.annotation.OrzSubApi;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 
@@ -23,7 +21,8 @@ public abstract class OrzMqSub<M, E> {
     private Converter<String, M> msgStringConverter;
     private String id;
     private String topic;
-    private Boolean primary;
+    private String qualifier;
+    private String fullQualifier;
 
     public OrzMqSub() {
     }
@@ -40,8 +39,12 @@ public abstract class OrzMqSub<M, E> {
         return Objects.requireNonNull(topic);
     }
 
-    public final boolean isPrimary() {
-        return Objects.requireNonNull(primary);
+    public final String getQualifier() {
+        return Objects.requireNonNull(qualifier);
+    }
+
+    public final String getFullQualifier() {
+        return Objects.requireNonNull(fullQualifier);
     }
 
     public abstract void start();
@@ -55,51 +58,44 @@ public abstract class OrzMqSub<M, E> {
         }
 
         var attributes = AnnotationUtils.getAnnotationAttributes(annotation);
-        if (!attributes.containsKey(OrzSubApi.FIELD_ID)) {
-            throw new FatalBeanException(desc("@OrzSubApi field missing", "beanClass", getClass(), "field", OrzSubApi.FIELD_ID));
-        }
         if (!attributes.containsKey(OrzSubApi.FIELD_TOPIC)) {
             throw new FatalBeanException(desc("@OrzSubApi field missing", "beanClass", getClass(), "field", OrzSubApi.FIELD_TOPIC));
         }
 
-        var id = (String) attributes.get(OrzSubApi.FIELD_ID);
-        if (StringUtils.isBlank(id)) {
-            throw new FatalBeanException(desc("@OrzSubApi id is blank", "beanClass", getClass()));
-        }
-        var expectClassName = Stream.of(id.split("-")).map(StringUtils::capitalize).collect(Collectors.joining()) + "Api";
-        if (!expectClassName.equals(getClass().getSimpleName())) {
-            throw new FatalBeanException(desc("@OrzSubApi class name is invalid", "beanClass", getClass().getSimpleName(), "expectClassName", expectClassName));
-        }
         var topic = context.resolveExpressionAsString((String) attributes.get(OrzSubApi.FIELD_TOPIC));
         if (StringUtils.isBlank(topic)) {
             throw new FatalBeanException(desc("@OrzSubApi topic is blank", "beanClass", getClass()));
         }
-        var primary = (Boolean) attributes.getOrDefault(OrzSubApi.FIELD_PRIMARY, true);
-        if (primary == null) {
-            throw new FatalBeanException(desc("@OrzSubApi primary is null", "beanClass", getClass()));
-        }
+
+        var qualifier = context.resolveExpressionAsString((String) attributes.get(OrzSubApi.FIELD_QUALIFIER));
+        qualifier = StringUtils.defaultIfBlank(qualifier, "");
 
         if (this.objectMapper == null) {
             this.objectMapper = context.getApplicationContext().getBean(ObjectMapper.class);
         }
-        this.msgType = obtainMsgType();
-        this.msgStringConverter = obtainMsgStringConverter();
-        this.id = id;
+        this.msgType = obtainMsgType(context);
+        this.msgStringConverter = obtainMsgStringConverter(context);
+        this.id = obtainId(context);
         this.topic = topic;
-        this.primary = primary;
+        this.qualifier = qualifier;
+        this.fullQualifier = topic + "@" + qualifier;
     }
 
     protected M convertMsg(String msg) {
         return this.msgStringConverter.convert(msg);
     }
 
-    protected Class<M> obtainMsgType() {
+    protected Class<M> obtainMsgType(OrzMqBeanInitContext context) {
         // noinspection unchecked
         return (Class<M>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
-    protected Converter<String, M> obtainMsgStringConverter() {
+    protected Converter<String, M> obtainMsgStringConverter(OrzMqBeanInitContext context) {
         return OrzMqSubConverters.obtainStringConverter(objectMapper, msgType);
+    }
+
+    protected String obtainId(OrzMqBeanInitContext context) {
+        return getClass().getSimpleName();
     }
 
     protected abstract void subscribe(M msg, E extra);

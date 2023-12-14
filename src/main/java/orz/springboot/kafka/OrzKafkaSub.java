@@ -127,7 +127,7 @@ public abstract class OrzKafkaSub<M> extends OrzMqSub<M, OrzKafkaSubExtra> {
 
         this.publisher = context.getApplicationContext();
         this.registry = context.getApplicationContext().getBean(KafkaListenerEndpointRegistry.class);
-        this.groupId = isPrimary() ? consumerGroup : consumerGroup + "." + getId();
+        this.groupId = StringUtils.isBlank(getQualifier()) ? consumerGroup : consumerGroup + "." + getQualifier();
         this.retryTopic = getTopic() + RETRY_TOPIC_POSTFIX;
         this.concurrency = Optional.ofNullable(props.getSub().get(getId())).map(OrzKafkaProps.SubConfig::getConcurrency).orElse(kafkaProperties.getListener().getConcurrency());
         this.autoStartup = Optional.ofNullable(props.getSub().get(getId())).map(OrzKafkaProps.SubConfig::isRunning).orElse(kafkaProperties.getListener().isAutoStartup());

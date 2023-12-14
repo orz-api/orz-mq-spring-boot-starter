@@ -9,13 +9,10 @@ import java.lang.annotation.*;
 @Documented
 @Component
 public @interface OrzSubApi {
-    String FIELD_ID = "id";
     String FIELD_TOPIC = "topic";
-    String FIELD_PRIMARY = "primary";
-
-    String id();
+    String FIELD_QUALIFIER = "qualifier";
 
     String topic();
 
-    boolean primary() default true;
+    String qualifier() default "";
 }

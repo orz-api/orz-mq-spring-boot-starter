@@ -14,31 +14,21 @@ import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 @Component
 public class OrzMqManager {
     private final Map<String, OrzMqSub<?, ?>> subMap = new HashMap<>();
-    private final Map<String, OrzMqSub<?, ?>> primarySubMap = new HashMap<>();
+    private final Map<String, OrzMqSub<?, ?>> fullQualifierSubMap = new HashMap<>();
     private final Map<Class<?>, OrzMqPub<?>> pubMap = new HashMap<>();
 
     public synchronized void registerSub(OrzMqSub<?, ?> sub) {
         assertion(sub != null, "sub != null");
         var exists = subMap.get(sub.getId());
-        if (exists == sub) {
-            return;
-        }
-        if (exists != null) {
+        if (exists != null && exists != sub) {
             throw new FatalBeanException(desc("sub already exists", "id", sub.getId(), "sub", sub.getClass().getName(), "exists", exists.getClass().getName()));
         }
-        if (sub.isPrimary()) {
-            var existsPrimarySub = primarySubMap.get(sub.getTopic());
-            if (existsPrimarySub == sub) {
-                return;
-            }
-            if (existsPrimarySub != null) {
-                throw new FatalBeanException(desc("primary sub already exists", "topic", sub.getTopic(), "sub", sub.getClass().getName(), "exists", existsPrimarySub.getClass().getName()));
-            }
+        var fullQualifierExists = fullQualifierSubMap.get(sub.getFullQualifier());
+        if (fullQualifierExists != null && fullQualifierExists != sub) {
+            throw new FatalBeanException(desc("sub already exists", "fullQualifier", sub.getFullQualifier(), "sub", sub.getClass().getName(), "exists", fullQualifierExists.getClass().getName()));
         }
         subMap.put(sub.getId(), sub);
-        if (sub.isPrimary()) {
-            primarySubMap.put(sub.getTopic(), sub);
-        }
+        fullQualifierSubMap.put(sub.getFullQualifier(), sub);
     }
 
     public synchronized void registerPub(OrzMqPub<?> pub) {
