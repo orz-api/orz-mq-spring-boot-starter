@@ -15,10 +15,10 @@ import java.util.Objects;
 import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 
 @Getter(AccessLevel.PROTECTED)
-public abstract class OrzMqSub<M, E> {
+public abstract class OrzMqSub<D, E> {
     private ObjectMapper objectMapper;
-    private Class<M> msgType;
-    private Converter<String, M> msgStringConverter;
+    private Class<D> dataType;
+    private Converter<String, D> dataStringConverter;
     private String id;
     private String topic;
     private String qualifier;
@@ -73,30 +73,30 @@ public abstract class OrzMqSub<M, E> {
         if (this.objectMapper == null) {
             this.objectMapper = context.getApplicationContext().getBean(ObjectMapper.class);
         }
-        this.msgType = obtainMsgType(context);
-        this.msgStringConverter = obtainMsgStringConverter(context);
+        this.dataType = obtainDataType(context);
+        this.dataStringConverter = obtainDataStringConverter(context);
         this.id = obtainId(context);
         this.topic = topic;
         this.qualifier = qualifier;
         this.fullQualifier = topic + "@" + qualifier;
     }
 
-    protected M convertMsg(String msg) {
-        return this.msgStringConverter.convert(msg);
+    protected D convertData(String data) {
+        return this.dataStringConverter.convert(data);
     }
 
-    protected Class<M> obtainMsgType(OrzMqBeanInitContext context) {
+    protected Class<D> obtainDataType(OrzMqBeanInitContext context) {
         // noinspection unchecked
-        return (Class<M>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        return (Class<D>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     }
 
-    protected Converter<String, M> obtainMsgStringConverter(OrzMqBeanInitContext context) {
-        return OrzMqSubConverters.obtainStringConverter(objectMapper, msgType);
+    protected Converter<String, D> obtainDataStringConverter(OrzMqBeanInitContext context) {
+        return OrzMqSubConverters.obtainStringConverter(objectMapper, dataType);
     }
 
     protected String obtainId(OrzMqBeanInitContext context) {
         return getClass().getSimpleName();
     }
 
-    protected abstract void subscribe(M msg, E extra);
+    protected abstract void subscribe(D data, E extra);
 }

@@ -19,10 +19,10 @@ public class OrzMqSubConverters {
             Double.class, new StringToDoubleConverter()
     );
 
-    public static <T> Converter<String, T> obtainStringConverter(ObjectMapper objectMapper, Class<T> msgType) {
-        var converter = STRING_CONVERTER_MAP.get(msgType);
+    public static <T> Converter<String, T> obtainStringConverter(ObjectMapper objectMapper, Class<T> dataType) {
+        var converter = STRING_CONVERTER_MAP.get(dataType);
         if (converter == null) {
-            converter = new StringToObjectConverter(objectMapper, msgType);
+            converter = new StringToObjectConverter(objectMapper, dataType);
         }
         // noinspection unchecked
         return (Converter<String, T>) converter;
@@ -30,73 +30,73 @@ public class OrzMqSubConverters {
 
     public static class StringToStringConverter implements Converter<String, String> {
         @Override
-        public String convert(@Nonnull String msg) {
-            return msg;
+        public String convert(@Nonnull String data) {
+            return data;
         }
     }
 
     public static class StringToByteConverter implements Converter<String, Byte> {
         @Override
-        public Byte convert(@Nonnull String msg) {
-            return Byte.valueOf(msg);
+        public Byte convert(@Nonnull String data) {
+            return Byte.valueOf(data);
         }
     }
 
     public static class StringToShortConverter implements Converter<String, Short> {
         @Override
-        public Short convert(@Nonnull String msg) {
-            return Short.valueOf(msg);
+        public Short convert(@Nonnull String data) {
+            return Short.valueOf(data);
         }
     }
 
     public static class StringToIntegerConverter implements Converter<String, Integer> {
         @Override
-        public Integer convert(@Nonnull String msg) {
-            return Integer.valueOf(msg);
+        public Integer convert(@Nonnull String data) {
+            return Integer.valueOf(data);
         }
     }
 
     public static class StringToLongConverter implements Converter<String, Long> {
         @Override
-        public Long convert(@Nonnull String msg) {
-            return Long.valueOf(msg);
+        public Long convert(@Nonnull String data) {
+            return Long.valueOf(data);
         }
     }
 
     public static class StringToBooleanConverter implements Converter<String, Boolean> {
         @Override
-        public Boolean convert(@Nonnull String msg) {
-            return Boolean.valueOf(msg);
+        public Boolean convert(@Nonnull String data) {
+            return Boolean.valueOf(data);
         }
     }
 
     public static class StringToFloatConverter implements Converter<String, Float> {
         @Override
-        public Float convert(@Nonnull String msg) {
-            return Float.valueOf(msg);
+        public Float convert(@Nonnull String data) {
+            return Float.valueOf(data);
         }
     }
 
     public static class StringToDoubleConverter implements Converter<String, Double> {
         @Override
-        public Double convert(@Nonnull String msg) {
-            return Double.valueOf(msg);
+        public Double convert(@Nonnull String data) {
+            return Double.valueOf(data);
         }
     }
 
     public static class StringToObjectConverter implements Converter<String, Object> {
         private final ObjectMapper objectMapper;
-        private final Class<?> msgType;
+        private final Class<?> dataType;
 
-        public StringToObjectConverter(ObjectMapper objectMapper, Class<?> msgType) {
+        public StringToObjectConverter(ObjectMapper objectMapper, Class<?> dataType) {
             this.objectMapper = objectMapper;
-            this.msgType = msgType;
+            this.dataType = dataType;
         }
 
         @Override
         @SneakyThrows
-        public Object convert(@Nonnull String msg) {
-            return objectMapper.readValue(msg, msgType);
+        public Object convert(@Nonnull String data) {
+            return objectMapper.readValue(data, dataType);
         }
     }
 }

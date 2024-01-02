@@ -35,7 +35,7 @@ import static orz.springboot.kafka.OrzKafkaConstants.RETRY_TOPIC_POSTFIX;
         concurrency = "#{__listener.concurrency}",
         autoStartup = "#{__listener.autoStartup}"
 )
-public abstract class OrzKafkaSub<M> extends OrzMqSub<M, OrzKafkaSubExtra> {
+public abstract class OrzKafkaSub<D> extends OrzMqSub<D, OrzKafkaSubExtra> {
     private ApplicationEventPublisher publisher;
     private KafkaListenerEndpointRegistry registry;
     private String groupId;
@@ -79,7 +79,7 @@ public abstract class OrzKafkaSub<M> extends OrzMqSub<M, OrzKafkaSubExtra> {
             }
         }
         try {
-            subscribe(convertMsg(record.value()), new OrzKafkaSubExtra(record));
+            subscribe(convertData(record.value()), new OrzKafkaSubExtra(record));
         } catch (OrzAlarmException e) {
             alarm(e, e);
             throw e;
