@@ -8,7 +8,6 @@ import org.springframework.beans.FatalBeanException;
 import org.springframework.core.annotation.AnnotationUtils;
 import orz.springboot.mq.annotation.OrzPubApi;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
@@ -54,12 +53,14 @@ public abstract class OrzMqPub<E> {
             this.objectMapper = context.getApplicationContext().getBean(ObjectMapper.class);
         }
         this.eventType = obtainEventType();
+        if (this.eventType == null) {
+            throw new FatalBeanException(desc("eventType is null", "beanClass", getClass()));
+        }
         this.topic = topic;
     }
 
     protected Class<E> obtainEventType() {
-        // noinspection unchecked
-        return (Class<E>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        return OrzMqUtils.getPubEventType(getClass());
     }
 
     protected abstract CompletableFuture<Void> publish(E event);

@@ -7,7 +7,7 @@ import java.util.concurrent.CompletableFuture;
 // 为了避免 IDEA 提示 "Could not autowire."
 // 需要将其注册到 org.springframework.boot.autoconfigure.AutoConfiguration.imports
 // 同时需要在运行时移除掉 bean 的定义，不然使用者注入错误的泛型时也不会报错
-// 移除逻辑见 OrzMqBeanPostProcessor
+// 移除逻辑见 OrzMqBeanFactoryPostProcessor
 @Component
 public class OrzMqPublisher<E> {
     private final OrzMqManager mqManager;

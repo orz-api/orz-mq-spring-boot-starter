@@ -2,7 +2,6 @@ package orz.springboot.mq;
 
 import org.springframework.beans.factory.config.BeanExpressionContext;
 import org.springframework.beans.factory.config.BeanExpressionResolver;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.expression.StandardBeanExpressionResolver;
 import orz.springboot.base.OrzBaseUtils;
@@ -61,9 +60,5 @@ public class OrzMqBeanInitContext {
             return OrzBaseUtils.getAppContext();
         }
         return context;
-    }
-
-    public BeanDefinitionRegistry getBeanDefinitionRegistry() {
-        return (BeanDefinitionRegistry) getApplicationContext().getBeanFactory();
     }
 }

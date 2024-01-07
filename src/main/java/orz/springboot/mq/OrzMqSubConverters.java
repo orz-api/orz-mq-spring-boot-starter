@@ -1,10 +1,10 @@
 package orz.springboot.mq;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Nonnull;
 import lombok.SneakyThrows;
 import org.springframework.core.convert.converter.Converter;
 
-import javax.annotation.Nonnull;
 import java.util.Map;
 
 public class OrzMqSubConverters {

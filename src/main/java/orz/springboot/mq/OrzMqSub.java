@@ -9,7 +9,6 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.converter.Converter;
 import orz.springboot.mq.annotation.OrzSubApi;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.Objects;
 
 import static orz.springboot.base.description.OrzDescriptionUtils.desc;
@@ -74,6 +73,9 @@ public abstract class OrzMqSub<D, E> {
             this.objectMapper = context.getApplicationContext().getBean(ObjectMapper.class);
         }
         this.dataType = obtainDataType(context);
+        if (this.dataType == null) {
+            throw new FatalBeanException(desc("dataType is null", "beanClass", getClass()));
+        }
         this.dataStringConverter = obtainDataStringConverter(context);
         this.id = obtainId(context);
         this.topic = topic;
@@ -86,8 +88,7 @@ public abstract class OrzMqSub<D, E> {
     }
 
     protected Class<D> obtainDataType(OrzMqBeanInitContext context) {
-        // noinspection unchecked
-        return (Class<D>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        return OrzMqUtils.getSubDataType(getClass());
     }
 
     protected Converter<String, D> obtainDataStringConverter(OrzMqBeanInitContext context) {

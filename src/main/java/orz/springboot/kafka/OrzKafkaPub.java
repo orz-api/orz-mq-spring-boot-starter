@@ -1,6 +1,7 @@
 package orz.springboot.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Nullable;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -12,7 +13,6 @@ import orz.springboot.base.OrzBaseUtils;
 import orz.springboot.mq.OrzMqBeanInitContext;
 import orz.springboot.mq.OrzMqPub;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
 
 @Getter(AccessLevel.PROTECTED)
