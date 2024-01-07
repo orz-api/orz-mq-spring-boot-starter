@@ -61,8 +61,8 @@ public class OrzMqManager {
         sub.stop();
     }
 
-    public <E> void publish(E event) {
-        publishAsync(event).join();
+    public <E> void publish(E event) throws Exception {
+        publishAsync(event).get();
     }
 
     public <E> CompletableFuture<Void> publishAsync(E event) {

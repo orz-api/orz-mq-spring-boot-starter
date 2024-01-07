@@ -16,7 +16,7 @@ public class OrzMqPublisher<E> {
         this.mqManager = mqManager;
     }
 
-    public void publish(E event) {
+    public void publish(E event) throws Exception {
         mqManager.publish(event);
     }
 
