@@ -50,15 +50,15 @@ public class OrzMqBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
     }
 
     private void registerPublisher(BeanDefinitionRegistry registry, Class<?> cls) {
-        var eventType = OrzMqUtils.getPubEventType(cls);
-        if (eventType == null) {
+        var dataType = OrzMqUtils.getPubDataType(cls);
+        if (dataType == null) {
             return;
         }
         var definition = new RootBeanDefinition(OrzMqPublisher.class);
-        definition.setTargetType(ResolvableType.forClassWithGenerics(OrzMqPublisher.class, eventType));
-        registry.registerBeanDefinition("OrzMqPublisher<" + eventType + ">", definition);
+        definition.setTargetType(ResolvableType.forClassWithGenerics(OrzMqPublisher.class, dataType));
+        registry.registerBeanDefinition("OrzMqPublisher<" + dataType + ">", definition);
         if (log.isDebugEnabled()) {
-            log.debug(desc("register publisher bean", "publisher", "OrzMqPublisher<" + eventType + ">"));
+            log.debug(desc("register publisher bean", "publisher", "OrzMqPublisher<" + dataType + ">"));
         }
     }
 }

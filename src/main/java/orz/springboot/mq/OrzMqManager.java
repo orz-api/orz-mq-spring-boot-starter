@@ -33,14 +33,14 @@ public class OrzMqManager {
 
     public synchronized void registerPub(OrzMqPub<?> pub) {
         assertion(pub != null, "pub != null");
-        var exists = pubMap.get(pub.getEventType());
+        var exists = pubMap.get(pub.getDataType());
         if (exists == pub) {
             return;
         }
         if (exists != null) {
-            throw new FatalBeanException(desc("pub already exists", "eventType", pub.getEventType().getName(), "pub", pub.getClass().getName(), "exists", exists.getClass().getName()));
+            throw new FatalBeanException(desc("pub already exists", "dataType", pub.getDataType().getName(), "pub", pub.getClass().getName(), "exists", exists.getClass().getName()));
         }
-        pubMap.put(pub.getEventType(), pub);
+        pubMap.put(pub.getDataType(), pub);
     }
 
     public void startSub(String id) {
@@ -61,17 +61,17 @@ public class OrzMqManager {
         sub.stop();
     }
 
-    public <E> void publish(E event) throws Exception {
-        publishAsync(event).get();
+    public <E> void publish(E data) throws Exception {
+        publishAsync(data).get();
     }
 
-    public <E> CompletableFuture<Void> publishAsync(E event) {
-        assertion(event != null, "event != null");
+    public <D> CompletableFuture<Void> publishAsync(D data) {
+        assertion(data != null, "data != null");
         // noinspection unchecked
-        var pub = (OrzMqPub<E>) pubMap.get(event.getClass());
+        var pub = (OrzMqPub<D>) pubMap.get(data.getClass());
         if (pub == null) {
-            throw new RuntimeException(desc("pub not found", "eventType", event.getClass()));
+            throw new RuntimeException(desc("pub not found", "dataType", data.getClass()));
         }
-        return pub.publish(event);
+        return pub.publish(data);
     }
 }

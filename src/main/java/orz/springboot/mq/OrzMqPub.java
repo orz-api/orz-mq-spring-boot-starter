@@ -14,12 +14,12 @@ import java.util.concurrent.CompletableFuture;
 import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 
 @Getter(AccessLevel.PROTECTED)
-public abstract class OrzMqPub<E> {
+public abstract class OrzMqPub<D> {
     protected static final Runnable VOID = () -> {
     };
 
     private ObjectMapper objectMapper;
-    private Class<E> eventType;
+    private Class<D> dataType;
     private String topic;
 
     public OrzMqPub() {
@@ -52,16 +52,16 @@ public abstract class OrzMqPub<E> {
         if (this.objectMapper == null) {
             this.objectMapper = context.getApplicationContext().getBean(ObjectMapper.class);
         }
-        this.eventType = obtainEventType();
-        if (this.eventType == null) {
-            throw new FatalBeanException(desc("eventType is null", "beanClass", getClass()));
+        this.dataType = obtainDataType();
+        if (this.dataType == null) {
+            throw new FatalBeanException(desc("dataType is null", "beanClass", getClass()));
         }
         this.topic = topic;
     }
 
-    protected Class<E> obtainEventType() {
-        return OrzMqUtils.getPubEventType(getClass());
+    protected Class<D> obtainDataType() {
+        return OrzMqUtils.getPubDataType(getClass());
     }
 
-    protected abstract CompletableFuture<Void> publish(E event);
+    protected abstract CompletableFuture<Void> publish(D data);
 }

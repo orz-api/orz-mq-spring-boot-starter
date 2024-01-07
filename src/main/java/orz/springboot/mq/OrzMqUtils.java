@@ -7,7 +7,7 @@ public class OrzMqUtils {
         return OrzBaseUtils.getClassGenericParameter(cls);
     }
 
-    public static <T> Class<T> getPubEventType(Class<?> cls) {
+    public static <T> Class<T> getPubDataType(Class<?> cls) {
         return OrzBaseUtils.getClassGenericParameter(cls);
     }
 }
