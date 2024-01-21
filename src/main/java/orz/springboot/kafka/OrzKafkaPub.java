@@ -59,7 +59,7 @@ public abstract class OrzKafkaPub<E> extends OrzMqPub<E> {
         if (extra == null) {
             extra = OrzKafkaPubExtra.EMPTY;
         }
-        return this.kafkaTemplate.send(new ProducerRecord<>(
+        return kafkaTemplate.send(new ProducerRecord<>(
                 getTopic(), extra.getPartition(), extra.getTimestamp(), extra.getKey(), data, extra.getHeaders()
         ));
     }
