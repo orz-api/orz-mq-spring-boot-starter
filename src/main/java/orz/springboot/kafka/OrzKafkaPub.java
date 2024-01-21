@@ -68,6 +68,14 @@ public abstract class OrzKafkaPub<E> extends OrzMqPub<E> {
         return OrzKafkaPubExtra.key(key);
     }
 
+    protected OrzKafkaPubExtra extraKey(Integer key) {
+        return extraKey(String.valueOf(key));
+    }
+
+    protected OrzKafkaPubExtra extraKey(Long key) {
+        return extraKey(String.valueOf(key));
+    }
+
     protected OrzKafkaPubExtra extraPartition(int partition) {
         return OrzKafkaPubExtra.partition(partition);
     }
