@@ -33,7 +33,8 @@ import static orz.springboot.kafka.OrzKafkaConstants.RETRY_TOPIC_POSTFIX;
                 "#{__listener.retryTopic}",
         },
         concurrency = "#{__listener.concurrency}",
-        autoStartup = "#{__listener.autoStartup}"
+        autoStartup = "#{__listener.autoStartup}",
+        properties = "#{__listener.properties}"
 )
 public abstract class OrzKafkaSub<D> extends OrzMqSub<D, OrzKafkaSubExtra> {
     private ApplicationEventPublisher publisher;
@@ -65,6 +66,10 @@ public abstract class OrzKafkaSub<D> extends OrzMqSub<D, OrzKafkaSubExtra> {
 
     public final Boolean getAutoStartup() {
         return Objects.requireNonNull(autoStartup);
+    }
+
+    public String[] getProperties() {
+        return new String[]{};
     }
 
     @KafkaHandler(isDefault = true)
