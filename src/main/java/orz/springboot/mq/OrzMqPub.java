@@ -1,6 +1,5 @@
 package orz.springboot.mq;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
@@ -14,19 +13,20 @@ import java.util.concurrent.CompletableFuture;
 import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 
 @Getter(AccessLevel.PROTECTED)
-public abstract class OrzMqPub<D> {
+public abstract class OrzMqPub<E, M> {
     protected static final Runnable VOID = () -> {
     };
 
-    private ObjectMapper objectMapper;
-    private Class<D> dataType;
+    private String id;
     private String topic;
+    private Class<E> eventType;
+    private Class<M> messageType;
 
     public OrzMqPub() {
     }
 
-    public OrzMqPub(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+    public final String getId() {
+        return Objects.requireNonNull(id);
     }
 
     public final String getTopic() {
@@ -49,19 +49,34 @@ public abstract class OrzMqPub<D> {
             throw new FatalBeanException(desc("@OrzPubApi topic is blank", "beanClass", getClass()));
         }
 
-        if (this.objectMapper == null) {
-            this.objectMapper = context.getApplicationContext().getBean(ObjectMapper.class);
-        }
-        this.dataType = obtainDataType();
-        if (this.dataType == null) {
-            throw new FatalBeanException(desc("dataType is null", "beanClass", getClass()));
+        this.id = obtainId(context);
+        if (StringUtils.isBlank(id)) {
+            throw new FatalBeanException(desc("id is blank", "beanClass", getClass()));
         }
         this.topic = topic;
+
+        this.eventType = obtainEventType();
+        if (this.eventType == null) {
+            throw new FatalBeanException(desc("eventType is null", "beanClass", getClass()));
+        }
+
+        this.messageType = obtainMessageType();
+        if (this.messageType == null) {
+            throw new FatalBeanException(desc("messageType is null", "beanClass", getClass()));
+        }
     }
 
-    protected Class<D> obtainDataType() {
-        return OrzMqUtils.getPubDataType(getClass());
+    protected String obtainId(OrzMqBeanInitContext context) {
+        return getClass().getSimpleName();
     }
 
-    protected abstract CompletableFuture<Void> publish(D data);
+    protected Class<E> obtainEventType() {
+        return OrzMqUtils.getPubEventType(getClass());
+    }
+
+    protected Class<M> obtainMessageType() {
+        return OrzMqUtils.getPubMessageType(getClass());
+    }
+
+    protected abstract CompletableFuture<Void> publish(E event);
 }

@@ -44,6 +44,9 @@ public class OrzKafkaProps {
     @Valid
     private Map<String, SubConfig> sub = Collections.emptyMap();
 
+    @Valid
+    private Map<String, PubConfig> pub = Collections.emptyMap();
+
     @EventListener
     public void onKafkaSubRunningChange(OrzKafkaSubRunningChangeEventBo event) {
         var id = event.getSub().getId();
@@ -135,12 +138,20 @@ public class OrzKafkaProps {
         @Positive
         private Integer concurrency = null;
 
+        private String schemaRegistryUrl = null;
+
         public SubConfig() {
         }
 
         public SubConfig(SubConfig other) {
             this.running = other.running;
             this.concurrency = other.concurrency;
+            this.schemaRegistryUrl = other.schemaRegistryUrl;
         }
+    }
+
+    @Data
+    public static class PubConfig {
+        private String schemaRegistryUrl = null;
     }
 }

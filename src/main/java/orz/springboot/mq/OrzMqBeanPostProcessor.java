@@ -40,7 +40,7 @@ public class OrzMqBeanPostProcessor implements BeanPostProcessor, ApplicationCon
 
     @Override
     public Object postProcessBeforeInitialization(@Nonnull Object bean, @Nonnull String beanName) throws BeansException {
-        if (bean instanceof OrzMqPub<?> pub) {
+        if (bean instanceof OrzMqPub<?, ?> pub) {
             pub.init(beanInitContext);
             mqManager.registerPub(pub);
             if (log.isDebugEnabled()) {

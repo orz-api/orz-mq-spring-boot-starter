@@ -4,10 +4,11 @@ plugins {
     `maven-publish`
     id("org.springframework.boot") version "3.1.4"
     id("io.spring.dependency-management") version "1.1.3"
+    id("com.google.protobuf") version "0.9.4"
 }
 
 group = "io.github.orz-api"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.2-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -30,6 +31,9 @@ configurations {
 repositories {
     mavenCentral()
     maven {
+        url = uri("https://packages.confluent.io/maven/")
+    }
+    maven {
         url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
     }
 }
@@ -42,6 +46,12 @@ dependencies {
     compileOnly("com.ctrip.framework.apollo:apollo-client:2.1.0")
     testImplementation("com.ctrip.framework.apollo:apollo-client:2.1.0")
 
+    api("io.confluent:kafka-json-schema-serializer:7.6.2")
+    compileOnly("io.confluent:kafka-protobuf-serializer:7.6.2")
+    testImplementation("io.confluent:kafka-protobuf-serializer:7.6.2")
+    compileOnly("com.google.protobuf:protobuf-java:3.25.4")
+    testImplementation("com.google.protobuf:protobuf-java:3.25.4")
+
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
@@ -49,6 +59,10 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     testAnnotationProcessor("org.projectlombok:lombok")
+
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:kafka")
 }
 
 tasks.withType<Test> {
@@ -110,4 +124,10 @@ publishing {
 
 signing {
     sign(publishing.publications["mavenJava"])
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.25.4"
+    }
 }

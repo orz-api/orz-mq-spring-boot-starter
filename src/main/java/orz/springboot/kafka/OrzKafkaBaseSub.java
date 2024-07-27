@@ -1,21 +1,28 @@
 package orz.springboot.kafka;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import orz.springboot.alarm.exception.OrzAlarmException;
 import orz.springboot.kafka.model.OrzKafkaSubRunningChangeEventBo;
 import orz.springboot.mq.OrzMqBeanInitContext;
 import orz.springboot.mq.OrzMqSub;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -25,18 +32,20 @@ import static orz.springboot.kafka.OrzKafkaConstants.RETRY_GROUP_ID_HEADER;
 import static orz.springboot.kafka.OrzKafkaConstants.RETRY_TOPIC_POSTFIX;
 
 @Slf4j
+@Getter(AccessLevel.PROTECTED)
 @KafkaListener(
         id = "#{__listener.id}",
+        containerFactory = "#{__listener.containerFactory}",
         groupId = "#{__listener.groupId}",
         topics = {
                 "#{__listener.topic}",
                 "#{__listener.retryTopic}",
         },
         concurrency = "#{__listener.concurrency}",
-        autoStartup = "#{__listener.autoStartup}",
-        properties = "#{__listener.properties}"
+        autoStartup = "#{__listener.autoStartup}"
 )
-public abstract class OrzKafkaSub<D> extends OrzMqSub<D, OrzKafkaSubExtra> {
+public abstract class OrzKafkaBaseSub<M> extends OrzMqSub<M, OrzKafkaSubExtra<M>> {
+    private OrzKafkaProps props;
     private ApplicationEventPublisher publisher;
     private KafkaListenerEndpointRegistry registry;
     private String groupId;
@@ -44,12 +53,7 @@ public abstract class OrzKafkaSub<D> extends OrzMqSub<D, OrzKafkaSubExtra> {
     private Integer concurrency;
     private Boolean autoStartup;
 
-    public OrzKafkaSub() {
-        super();
-    }
-
-    public OrzKafkaSub(ObjectMapper objectMapper) {
-        super(objectMapper);
+    public OrzKafkaBaseSub() {
     }
 
     public final String getGroupId() {
@@ -68,12 +72,12 @@ public abstract class OrzKafkaSub<D> extends OrzMqSub<D, OrzKafkaSubExtra> {
         return Objects.requireNonNull(autoStartup);
     }
 
-    public String[] getProperties() {
-        return new String[]{};
+    public String getContainerFactory() {
+        return getId() + "ContainerFactory";
     }
 
     @KafkaHandler(isDefault = true)
-    public void subscribe(ConsumerRecord<String, String> record) {
+    public void subscribe(ConsumerRecord<String, M> record) {
         if (record.topic().endsWith(RETRY_TOPIC_POSTFIX)) {
             var retryGroupId = Optional.ofNullable(record.headers().lastHeader(RETRY_GROUP_ID_HEADER))
                     .map(header -> new String(header.value(), StandardCharsets.UTF_8))
@@ -84,7 +88,7 @@ public abstract class OrzKafkaSub<D> extends OrzMqSub<D, OrzKafkaSubExtra> {
             }
         }
         try {
-            subscribe(convertData(record.value()), new OrzKafkaSubExtra(record));
+            subscribe(record.value(), new OrzKafkaSubExtra<>(record));
         } catch (OrzAlarmException e) {
             alarm(e, e);
             throw e;
@@ -120,9 +124,13 @@ public abstract class OrzKafkaSub<D> extends OrzMqSub<D, OrzKafkaSubExtra> {
     @Override
     protected void init(OrzMqBeanInitContext context) {
         super.init(context);
-        var props = context.getApplicationContext().getBean(OrzKafkaProps.class);
-        var kafkaProperties = context.getApplicationContext().getBean(KafkaProperties.class);
-        var consumerGroup = kafkaProperties.getConsumer().getGroupId();
+
+        this.props = context.getApplicationContext().getBean(OrzKafkaProps.class);
+
+        var defaultConsumerFactory = (DefaultKafkaConsumerFactory<?, ?>) context.getApplicationContext().getBean(DefaultKafkaConsumerFactory.class);
+        var consumerConfigs = new HashMap<>(defaultConsumerFactory.getConfigurationProperties());
+
+        var consumerGroup = (String) consumerConfigs.get(ConsumerConfig.GROUP_ID_CONFIG);
         if (consumerGroup == null) {
             consumerGroup = context.getApplicationContext().getEnvironment().getProperty("spring.application.name");
         }
@@ -134,7 +142,17 @@ public abstract class OrzKafkaSub<D> extends OrzMqSub<D, OrzKafkaSubExtra> {
         this.registry = context.getApplicationContext().getBean(KafkaListenerEndpointRegistry.class);
         this.groupId = StringUtils.isBlank(getQualifier()) ? consumerGroup : consumerGroup + "." + getQualifier();
         this.retryTopic = getTopic() + RETRY_TOPIC_POSTFIX;
-        this.concurrency = Optional.ofNullable(props.getSub().get(getId())).map(OrzKafkaProps.SubConfig::getConcurrency).orElse(kafkaProperties.getListener().getConcurrency());
-        this.autoStartup = Optional.ofNullable(props.getSub().get(getId())).map(OrzKafkaProps.SubConfig::isRunning).orElse(kafkaProperties.getListener().isAutoStartup());
+
+        var kafkaProperties = context.getApplicationContext().getBean(KafkaProperties.class);
+        this.concurrency = Optional.ofNullable(this.props.getSub().get(getId())).map(OrzKafkaProps.SubConfig::getConcurrency).orElse(kafkaProperties.getListener().getConcurrency());
+        this.autoStartup = Optional.ofNullable(this.props.getSub().get(getId())).map(OrzKafkaProps.SubConfig::isRunning).orElse(kafkaProperties.getListener().isAutoStartup());
+
+        consumerConfigs.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        setConsumerConfigs(consumerConfigs);
+        var containerFactory = new ConcurrentKafkaListenerContainerFactory<String, M>();
+        containerFactory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(consumerConfigs));
+        context.getApplicationContext().getBeanFactory().registerSingleton(getContainerFactory(), containerFactory);
     }
+
+    protected abstract void setConsumerConfigs(Map<String, Object> configs);
 }

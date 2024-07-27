@@ -1,12 +1,10 @@
 package orz.springboot.mq;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.core.convert.converter.Converter;
 import orz.springboot.mq.annotation.OrzSubApi;
 
 import java.util.Objects;
@@ -14,20 +12,14 @@ import java.util.Objects;
 import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 
 @Getter(AccessLevel.PROTECTED)
-public abstract class OrzMqSub<D, E> {
-    private ObjectMapper objectMapper;
-    private Class<D> dataType;
-    private Converter<String, D> dataStringConverter;
+public abstract class OrzMqSub<M, E> {
     private String id;
     private String topic;
     private String qualifier;
     private String fullQualifier;
+    private Class<M> messageType;
 
     public OrzMqSub() {
-    }
-
-    public OrzMqSub(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
     }
 
     public final String getId() {
@@ -69,35 +61,31 @@ public abstract class OrzMqSub<D, E> {
         var qualifier = context.resolveExpressionAsString((String) attributes.get(OrzSubApi.FIELD_QUALIFIER));
         qualifier = StringUtils.defaultIfBlank(qualifier, "");
 
-        if (this.objectMapper == null) {
-            this.objectMapper = context.getApplicationContext().getBean(ObjectMapper.class);
-        }
-        this.dataType = obtainDataType(context);
-        if (this.dataType == null) {
-            throw new FatalBeanException(desc("dataType is null", "beanClass", getClass()));
-        }
-        this.dataStringConverter = obtainDataStringConverter(context);
         this.id = obtainId(context);
+        if (StringUtils.isBlank(id)) {
+            throw new FatalBeanException(desc("id is blank", "beanClass", getClass()));
+        }
         this.topic = topic;
         this.qualifier = qualifier;
-        this.fullQualifier = topic + "@" + qualifier;
-    }
+        if (StringUtils.isNotBlank(qualifier)) {
+            this.fullQualifier = topic + "@" + qualifier;
+        } else {
+            this.fullQualifier = topic;
+        }
 
-    protected D convertData(String data) {
-        return this.dataStringConverter.convert(data);
-    }
-
-    protected Class<D> obtainDataType(OrzMqBeanInitContext context) {
-        return OrzMqUtils.getSubDataType(getClass());
-    }
-
-    protected Converter<String, D> obtainDataStringConverter(OrzMqBeanInitContext context) {
-        return OrzMqSubConverters.obtainStringConverter(objectMapper, dataType);
+        this.messageType = obtainMessageType();
+        if (this.messageType == null) {
+            throw new FatalBeanException(desc("messageType is null", "beanClass", getClass()));
+        }
     }
 
     protected String obtainId(OrzMqBeanInitContext context) {
         return getClass().getSimpleName();
     }
 
-    protected abstract void subscribe(D data, E extra);
+    protected Class<M> obtainMessageType() {
+        return OrzMqUtils.getSubMessageType(getClass());
+    }
+
+    protected abstract void subscribe(M message, E extra);
 }

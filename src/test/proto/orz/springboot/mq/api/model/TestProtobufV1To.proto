@@ -1,0 +1,36 @@
+syntax = "proto3";
+package orz.springboot.mq.api.model;
+
+option java_multiple_files = true;
+
+import "google/protobuf/timestamp.proto";
+import "google/type/date.proto";
+
+message TestProtobufV1To {
+  bytes bytesField = 1;
+
+  int32 intField = 2;
+  repeated int32 intListField = 3;
+
+  int64 longField = 4;
+  repeated int64 longListField = 5;
+
+  float floatField = 6;
+  repeated float floatListField = 7;
+
+  double doubleField = 8;
+  repeated double doubleListField = 9;
+
+  string strField = 10;
+  repeated string strListField = 11;
+
+  TestProtobufInnerObjectV1To innerObjectField = 12;
+  repeated TestProtobufInnerObjectV1To innerObjectListField = 13;
+
+  google.protobuf.Timestamp timeField = 14;
+  google.type.Date dateField = 15;
+}
+
+message TestProtobufInnerObjectV1To {
+  string str = 1;
+}
