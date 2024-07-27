@@ -3,6 +3,7 @@ package orz.springboot.kafka;
 import jakarta.annotation.Nullable;
 import lombok.AccessLevel;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Headers;
@@ -39,9 +40,15 @@ public abstract class OrzKafkaBasePub<E, M> extends OrzMqPub<E, M> {
         if (this.kafkaTemplate == null) {
             var defaultProducerFactory = (DefaultKafkaProducerFactory<?, ?>) context.getApplicationContext().getBean(DefaultKafkaProducerFactory.class);
             var producerConfigs = new HashMap<>(defaultProducerFactory.getConfigurationProperties());
+
+            var bootstrapServers = Optional.ofNullable(this.props.getPub(getId())).map(OrzKafkaProps.PubConfig::getBootstrapServers).orElse(null);
+            if (StringUtils.isNotBlank(bootstrapServers)) {
+                producerConfigs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+            }
             producerConfigs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
             setProducerConfigs(producerConfigs);
-            this.kafkaTemplate = new KafkaTemplate<>(new DefaultKafkaProducerFactory<String, M>(producerConfigs));
+
+            this.kafkaTemplate = new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(producerConfigs));
         }
     }
 

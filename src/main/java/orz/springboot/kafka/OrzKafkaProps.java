@@ -73,6 +73,14 @@ public class OrzKafkaProps {
         };
     }
 
+    public SubConfig getSub(String id) {
+        return sub.get(id);
+    }
+
+    public PubConfig getPub(String id) {
+        return pub.get(id);
+    }
+
     public SchemaRegistryConfig getSchemaRegistry(String id) {
         if (StringUtils.isBlank(id)) {
             return null;
@@ -85,14 +93,14 @@ public class OrzKafkaProps {
     }
 
     public SchemaRegistryConfig getSubSchemaRegistry(String id) {
-        return Optional.ofNullable(sub.get(id))
+        return Optional.ofNullable(getSub(id))
                 .map(SubConfig::getSchemaRegistry)
                 .map(this::getSchemaRegistry)
                 .orElse(null);
     }
 
     public SchemaRegistryConfig getPubSchemaRegistry(String id) {
-        return Optional.ofNullable(pub.get(id))
+        return Optional.ofNullable(getPub(id))
                 .map(PubConfig::getSchemaRegistry)
                 .map(this::getSchemaRegistry)
                 .orElse(null);
@@ -175,6 +183,8 @@ public class OrzKafkaProps {
         @Positive
         private Integer concurrency = null;
 
+        private String bootstrapServers = null;
+
         private String schemaRegistry = null;
 
         public SubConfig() {
@@ -183,12 +193,15 @@ public class OrzKafkaProps {
         public SubConfig(SubConfig other) {
             this.running = other.running;
             this.concurrency = other.concurrency;
+            this.bootstrapServers = other.bootstrapServers;
             this.schemaRegistry = other.schemaRegistry;
         }
     }
 
     @Data
     public static class PubConfig {
+        private String bootstrapServers = null;
+
         private String schemaRegistry = null;
     }
 }

@@ -144,11 +144,16 @@ public abstract class OrzKafkaBaseSub<M> extends OrzMqSub<M, OrzKafkaSubExtra<M>
         this.retryTopic = getTopic() + RETRY_TOPIC_POSTFIX;
 
         var kafkaProperties = context.getApplicationContext().getBean(KafkaProperties.class);
-        this.concurrency = Optional.ofNullable(this.props.getSub().get(getId())).map(OrzKafkaProps.SubConfig::getConcurrency).orElse(kafkaProperties.getListener().getConcurrency());
-        this.autoStartup = Optional.ofNullable(this.props.getSub().get(getId())).map(OrzKafkaProps.SubConfig::isRunning).orElse(kafkaProperties.getListener().isAutoStartup());
+        this.concurrency = Optional.ofNullable(this.props.getSub(getId())).map(OrzKafkaProps.SubConfig::getConcurrency).orElse(kafkaProperties.getListener().getConcurrency());
+        this.autoStartup = Optional.ofNullable(this.props.getSub(getId())).map(OrzKafkaProps.SubConfig::isRunning).orElse(kafkaProperties.getListener().isAutoStartup());
 
+        var bootstrapServers = Optional.ofNullable(this.props.getSub(getId())).map(OrzKafkaProps.SubConfig::getBootstrapServers).orElse(null);
+        if (StringUtils.isNotBlank(bootstrapServers)) {
+            consumerConfigs.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        }
         consumerConfigs.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         setConsumerConfigs(consumerConfigs);
+
         var containerFactory = new ConcurrentKafkaListenerContainerFactory<String, M>();
         containerFactory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(consumerConfigs));
         context.getApplicationContext().getBeanFactory().registerSingleton(getContainerFactory(), containerFactory);
