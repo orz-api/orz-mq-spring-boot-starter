@@ -5,7 +5,6 @@ import io.confluent.kafka.serializers.json.KafkaJsonSchemaSerializer;
 import io.confluent.kafka.serializers.json.KafkaJsonSchemaSerializerConfig;
 import lombok.AccessLevel;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.serializer.JsonSerializer;
@@ -24,10 +23,10 @@ public abstract class OrzKafkaJsonPub<E, M> extends OrzKafkaBasePub<E, M> {
 
     @Override
     protected void setProducerConfigs(Map<String, Object> configs) {
-        var pubConfig = getProps().getPub().get(getId());
-        if (pubConfig != null && StringUtils.isNotBlank(pubConfig.getSchemaRegistryUrl())) {
+        var registry = getProps().getPubSchemaRegistry(getId());
+        if (registry != null) {
             configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, OrzKafkaJsonSchemaSerializer.class);
-            configs.put(KafkaJsonSchemaSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, pubConfig.getSchemaRegistryUrl());
+            configs.put(KafkaJsonSchemaSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, registry.getUrl());
             configs.put(KafkaJsonSchemaSerializerConfig.WRITE_DATES_AS_ISO8601, true);
         } else {
             configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, OrzKafkaJsonSerializer.class);

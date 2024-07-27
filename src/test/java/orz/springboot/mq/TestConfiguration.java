@@ -44,10 +44,7 @@ public class TestConfiguration implements TestExecutionListener, Ordered {
                 .withNetworkAliases("schema-registry")
                 .dependsOn(kafkaContainer)
                 .waitingFor(Wait.forHttp("/subjects").forStatusCode(200));
-        registry.add("orz.kafka.pub.TestSchemaJsonPublishV1Api.schemaRegistryUrl", () -> "http://%s:%d".formatted(container.getHost(), container.getMappedPort(8081)));
-        registry.add("orz.kafka.sub.TestSchemaJsonSubscribeV1Api.schemaRegistryUrl", () -> "http://%s:%d".formatted(container.getHost(), container.getMappedPort(8081)));
-        registry.add("orz.kafka.pub.TestSchemaProtobufPublishV1Api.schemaRegistryUrl", () -> "http://%s:%d".formatted(container.getHost(), container.getMappedPort(8081)));
-        registry.add("orz.kafka.sub.TestSchemaProtobufSubscribeV1Api.schemaRegistryUrl", () -> "http://%s:%d".formatted(container.getHost(), container.getMappedPort(8081)));
+        registry.add("orz.kafka.schema-registry.test.url", () -> "http://%s:%d".formatted(container.getHost(), container.getMappedPort(8081)));
         return container;
     }
 

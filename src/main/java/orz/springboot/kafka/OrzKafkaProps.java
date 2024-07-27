@@ -1,10 +1,12 @@
 package orz.springboot.kafka;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.event.EventListener;
@@ -14,6 +16,7 @@ import org.springframework.util.backoff.BackOff;
 import org.springframework.util.backoff.ExponentialBackOff;
 import org.springframework.util.backoff.FixedBackOff;
 import org.springframework.validation.annotation.Validated;
+import orz.springboot.alarm.exception.OrzUnexpectedException;
 import orz.springboot.kafka.model.OrzKafkaSubRunningChangeEventBo;
 
 import java.util.Collections;
@@ -42,6 +45,9 @@ public class OrzKafkaProps {
     private OrzKafkaProps.BackOffExponentialWithMaxRetiresConfig backOffExponentialWithMaxRetires = new BackOffExponentialWithMaxRetiresConfig();
 
     @Valid
+    private Map<String, SchemaRegistryConfig> schemaRegistry = Collections.emptyMap();
+
+    @Valid
     private Map<String, SubConfig> sub = Collections.emptyMap();
 
     @Valid
@@ -65,6 +71,31 @@ public class OrzKafkaProps {
             case EXPONENTIAL -> backOffExponential.createInstance();
             case EXPONENTIAL_WITH_MAX_RETIRES -> backOffExponentialWithMaxRetires.createInstance();
         };
+    }
+
+    public SchemaRegistryConfig getSchemaRegistry(String id) {
+        if (StringUtils.isBlank(id)) {
+            return null;
+        }
+        var registry = schemaRegistry.get(id);
+        if (registry == null) {
+            throw new OrzUnexpectedException("OrzKafkaProps schema registry not found", "id", id);
+        }
+        return schemaRegistry.get(id);
+    }
+
+    public SchemaRegistryConfig getSubSchemaRegistry(String id) {
+        return Optional.ofNullable(sub.get(id))
+                .map(SubConfig::getSchemaRegistry)
+                .map(this::getSchemaRegistry)
+                .orElse(null);
+    }
+
+    public SchemaRegistryConfig getPubSchemaRegistry(String id) {
+        return Optional.ofNullable(pub.get(id))
+                .map(PubConfig::getSchemaRegistry)
+                .map(this::getSchemaRegistry)
+                .orElse(null);
     }
 
     public enum BackOffType {
@@ -132,13 +163,19 @@ public class OrzKafkaProps {
     }
 
     @Data
+    public static class SchemaRegistryConfig {
+        @NotBlank
+        private String url = null;
+    }
+
+    @Data
     public static class SubConfig {
         private boolean running = true;
 
         @Positive
         private Integer concurrency = null;
 
-        private String schemaRegistryUrl = null;
+        private String schemaRegistry = null;
 
         public SubConfig() {
         }
@@ -146,12 +183,12 @@ public class OrzKafkaProps {
         public SubConfig(SubConfig other) {
             this.running = other.running;
             this.concurrency = other.concurrency;
-            this.schemaRegistryUrl = other.schemaRegistryUrl;
+            this.schemaRegistry = other.schemaRegistry;
         }
     }
 
     @Data
     public static class PubConfig {
-        private String schemaRegistryUrl = null;
+        private String schemaRegistry = null;
     }
 }

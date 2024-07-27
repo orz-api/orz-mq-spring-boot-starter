@@ -4,3 +4,15 @@ spring:
   kafka:
     consumer:
       auto-offset-reset: earliest
+orz:
+  kafka:
+    sub:
+      TestSchemaJsonSubscribeV1Api:
+        schema-registry: test
+      TestSchemaProtobufSubscribeV1Api:
+        schema-registry: test
+    pub:
+      TestSchemaJsonPublishV1Api:
+        schema-registry: test
+      TestSchemaProtobufPublishV1Api:
+        schema-registry: test

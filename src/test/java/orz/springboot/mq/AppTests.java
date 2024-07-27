@@ -5,9 +5,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import orz.springboot.mq.api.model.TestJsonEventBo;
+import orz.springboot.mq.api.model.TestProtobufEventBo;
 import orz.springboot.mq.api.model.TestSchemaJsonEventBo;
 import orz.springboot.mq.api.model.TestSchemaProtobufEventBo;
 import orz.springboot.mq.api.sub.TestJsonSubscribeV1Api;
+import orz.springboot.mq.api.sub.TestProtobufSubscribeV1Api;
 import orz.springboot.mq.api.sub.TestSchemaJsonSubscribeV1Api;
 import orz.springboot.mq.api.sub.TestSchemaProtobufSubscribeV1Api;
 
@@ -26,6 +28,9 @@ class AppTests {
     private OrzMqPublisher<TestSchemaJsonEventBo> testSchemaJsonPublisher;
 
     @Autowired
+    private OrzMqPublisher<TestProtobufEventBo> testProtobufPublisher;
+
+    @Autowired
     private OrzMqPublisher<TestSchemaProtobufEventBo> testSchemaProtobufPublisher;
 
     @Autowired
@@ -33,6 +38,9 @@ class AppTests {
 
     @Autowired
     private TestSchemaJsonSubscribeV1Api testSchemaJsonSubscribeV1Api;
+
+    @Autowired
+    private TestProtobufSubscribeV1Api testProtobufSubscribeV1Api;
 
     @Autowired
     private TestSchemaProtobufSubscribeV1Api testSchemaProtobufSubscribeV1Api;
@@ -46,7 +54,7 @@ class AppTests {
                 0, new int[]{Integer.MIN_VALUE, Integer.MAX_VALUE},
                 0L, new long[]{Long.MIN_VALUE, Long.MAX_VALUE},
                 (float) 0, new float[]{Float.MIN_VALUE, Float.MAX_VALUE},
-                (double) 0, new double[]{Double.MIN_VALUE, Double.MAX_VALUE},
+                0, new double[]{Double.MIN_VALUE, Double.MAX_VALUE},
                 'a', new char[]{'1', '2'},
                 (byte) 0, new Byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE}, List.of(Byte.MIN_VALUE, Byte.MAX_VALUE),
                 (short) 0, new Short[]{Short.MIN_VALUE, Short.MAX_VALUE}, List.of(Short.MIN_VALUE, Short.MAX_VALUE),
@@ -92,7 +100,7 @@ class AppTests {
                 0, new int[]{Integer.MIN_VALUE, Integer.MAX_VALUE},
                 0L, new long[]{Long.MIN_VALUE, Long.MAX_VALUE},
                 (float) 0, new float[]{Float.MIN_VALUE, Float.MAX_VALUE},
-                (double) 0, new double[]{Double.MIN_VALUE, Double.MAX_VALUE},
+                0, new double[]{Double.MIN_VALUE, Double.MAX_VALUE},
                 'a', new char[]{'1', '2'},
                 (byte) 0, new Byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE}, List.of(Byte.MIN_VALUE, Byte.MAX_VALUE),
                 (short) 0, new Short[]{Short.MIN_VALUE, Short.MAX_VALUE}, List.of(Short.MIN_VALUE, Short.MAX_VALUE),
@@ -127,6 +135,40 @@ class AppTests {
         assertNotNull(message2);
         assertEquals(event2.toTestJsonV1To(), message2);
         var key2 = testSchemaJsonSubscribeV1Api.takeLastKey();
+        assertNull(key2);
+    }
+
+    @Test
+    @SneakyThrows
+    void testProtobuf() {
+        var event1 = new TestProtobufEventBo(
+                new byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE},
+                0, List.of(Integer.MIN_VALUE, Integer.MAX_VALUE),
+                0L, List.of(Long.MIN_VALUE, Long.MAX_VALUE),
+                (float) 0, List.of(Float.MIN_VALUE, Float.MAX_VALUE),
+                (double) 0, List.of(Double.MIN_VALUE, Double.MAX_VALUE),
+                "str", List.of("l1", "l2"),
+                new TestProtobufEventBo.InnerObjectBo("inner"),
+                List.of(
+                        new TestProtobufEventBo.InnerObjectBo("inner l1"),
+                        new TestProtobufEventBo.InnerObjectBo("inner l2")
+                ),
+                LocalDateTime.now(), LocalDate.now()
+        );
+        testProtobufPublisher.publish(event1);
+        var message1 = testProtobufSubscribeV1Api.takeLastMessage();
+        assertNotNull(message1);
+        assertEquals(event1.toTestProtobufV1To(), message1);
+        var key1 = testProtobufSubscribeV1Api.takeLastKey();
+        assertNotNull(key1);
+        assertEquals(key1, String.valueOf(event1.getLongField()));
+
+        var event2 = new TestProtobufEventBo();
+        testProtobufPublisher.publish(event2);
+        var message2 = testProtobufSubscribeV1Api.takeLastMessage();
+        assertNotNull(message2);
+        assertEquals(event2.toTestProtobufV1To(), message2);
+        var key2 = testProtobufSubscribeV1Api.takeLastKey();
         assertNull(key2);
     }
 

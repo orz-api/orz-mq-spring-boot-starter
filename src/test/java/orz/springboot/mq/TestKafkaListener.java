@@ -35,7 +35,7 @@ public class TestKafkaListener {
     }
 
     @KafkaListener(
-            topics = {"test-schema-protobuf"},
+            topics = {"test-protobuf", "test-schema-protobuf"},
             groupId = "TestKafkaListener2",
             properties = "value.deserializer=org.apache.kafka.common.serialization.ByteArrayDeserializer"
     )

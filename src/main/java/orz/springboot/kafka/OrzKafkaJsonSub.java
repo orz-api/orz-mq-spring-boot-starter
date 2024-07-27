@@ -3,7 +3,6 @@ package orz.springboot.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializer;
 import io.confluent.kafka.serializers.json.KafkaJsonSchemaDeserializerConfig;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import orz.springboot.base.OrzBaseUtils;
@@ -16,12 +15,11 @@ public abstract class OrzKafkaJsonSub<M> extends OrzKafkaBaseSub<M> {
 
     @Override
     protected void setConsumerConfigs(Map<String, Object> configs) {
-        var subConfig = getProps().getSub().get(getId());
-        if (subConfig != null && StringUtils.isNotBlank(subConfig.getSchemaRegistryUrl())) {
+        var registry = getProps().getSubSchemaRegistry(getId());
+        if (registry != null) {
             configs.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, OrzKafkaJsonSchemaDeserializer.class);
-            configs.put(KafkaJsonSchemaDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, subConfig.getSchemaRegistryUrl());
+            configs.put(KafkaJsonSchemaDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, registry.getUrl());
             configs.put(KafkaJsonSchemaDeserializerConfig.JSON_VALUE_TYPE, getMessageType());
-//            configs.put(KafkaJsonSchemaDeserializerConfig.FAIL_INVALID_SCHEMA, true);
         } else {
             configs.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, OrzKafkaJsonDeserializer.class);
             configs.put(OrzKafkaJsonDeserializer.USE_TYPE_INFO_HEADERS, false);
