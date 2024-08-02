@@ -39,7 +39,7 @@ repositories {
 }
 
 dependencies {
-    api("io.github.orz-api:orz-base-spring-boot-starter:0.0.1-SNAPSHOT")
+    api("io.github.orz-api:orz-base-spring-boot-starter:0.0.2-SNAPSHOT")
 
     compileOnly("org.springframework.kafka:spring-kafka")
     testImplementation("org.springframework.kafka:spring-kafka")
@@ -50,7 +50,9 @@ dependencies {
     compileOnly("io.confluent:kafka-protobuf-serializer:7.6.2")
     testImplementation("io.confluent:kafka-protobuf-serializer:7.6.2")
     compileOnly("com.google.protobuf:protobuf-java:3.25.4")
+    compileOnly("com.google.protobuf:protobuf-java-util:3.25.4")
     testImplementation("com.google.protobuf:protobuf-java:3.25.4")
+    testImplementation("com.google.protobuf:protobuf-java-util:3.25.4")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

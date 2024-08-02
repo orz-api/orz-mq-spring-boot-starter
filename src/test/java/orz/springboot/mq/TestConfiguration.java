@@ -1,6 +1,8 @@
 package orz.springboot.mq;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,11 +21,13 @@ import javax.annotation.Nonnull;
 @Slf4j
 @Configuration
 public class TestConfiguration implements TestExecutionListener, Ordered {
+    @ConditionalOnProperty("test.enable-test-container")
     @Bean
     public Network containerNetwork() {
         return Network.newNetwork();
     }
 
+    @ConditionalOnProperty("test.enable-test-container")
     @Bean
     @ServiceConnection
     public KafkaContainer kafkaContainer(Network containerNetwork) {
@@ -33,6 +37,7 @@ public class TestConfiguration implements TestExecutionListener, Ordered {
         return container;
     }
 
+    @ConditionalOnProperty("test.enable-test-container")
     @Bean
     public GenericContainer<?> schemaRegistryContainer(Network containerNetwork, KafkaContainer kafkaContainer, DynamicPropertyRegistry registry) {
         var container = new GenericContainer<>(DockerImageName.parse("confluentinc/cp-schema-registry:7.7.0"));
