@@ -11,7 +11,9 @@ group = "io.github.orz-api"
 version = "0.0.2-SNAPSHOT"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
     withJavadocJar()
     withSourcesJar()
 }
@@ -56,6 +58,7 @@ dependencies {
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     compileOnly("org.projectlombok:lombok")
     testCompileOnly("org.projectlombok:lombok")
