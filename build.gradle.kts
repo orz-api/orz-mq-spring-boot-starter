@@ -53,8 +53,8 @@ dependencies {
     compileOnly("io.confluent:kafka-protobuf-serializer:7.7.0")
     testImplementation("io.confluent:kafka-protobuf-serializer:7.7.0")
     compileOnly("com.google.protobuf:protobuf-java:3.25.4")
-    compileOnly("com.google.protobuf:protobuf-java-util:3.25.4")
     testImplementation("com.google.protobuf:protobuf-java:3.25.4")
+    compileOnly("com.google.protobuf:protobuf-java-util:3.25.4")
     testImplementation("com.google.protobuf:protobuf-java-util:3.25.4")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
