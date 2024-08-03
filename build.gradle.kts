@@ -2,8 +2,8 @@ plugins {
     signing
     `java-library`
     `maven-publish`
-    id("org.springframework.boot") version "3.1.4"
-    id("io.spring.dependency-management") version "1.1.3"
+    id("org.springframework.boot") version "3.3.2"
+    id("io.spring.dependency-management") version "1.1.6"
     id("com.google.protobuf") version "0.9.4"
 }
 
@@ -43,12 +43,12 @@ dependencies {
 
     compileOnly("org.springframework.kafka:spring-kafka")
     testImplementation("org.springframework.kafka:spring-kafka")
-    compileOnly("com.ctrip.framework.apollo:apollo-client:2.1.0")
-    testImplementation("com.ctrip.framework.apollo:apollo-client:2.1.0")
+    compileOnly("com.ctrip.framework.apollo:apollo-client:2.2.0")
+    testImplementation("com.ctrip.framework.apollo:apollo-client:2.2.0")
 
-    api("io.confluent:kafka-json-schema-serializer:7.6.2")
-    compileOnly("io.confluent:kafka-protobuf-serializer:7.6.2")
-    testImplementation("io.confluent:kafka-protobuf-serializer:7.6.2")
+    api("io.confluent:kafka-json-schema-serializer:7.7.0")
+    compileOnly("io.confluent:kafka-protobuf-serializer:7.7.0")
+    testImplementation("io.confluent:kafka-protobuf-serializer:7.7.0")
     compileOnly("com.google.protobuf:protobuf-java:3.25.4")
     compileOnly("com.google.protobuf:protobuf-java-util:3.25.4")
     testImplementation("com.google.protobuf:protobuf-java:3.25.4")
