@@ -48,7 +48,8 @@ dependencies {
     compileOnly("com.ctrip.framework.apollo:apollo-client:2.2.0")
     testImplementation("com.ctrip.framework.apollo:apollo-client:2.2.0")
 
-    api("io.confluent:kafka-json-schema-serializer:7.7.0")
+    compileOnly("io.confluent:kafka-json-schema-serializer:7.7.0")
+    testImplementation("io.confluent:kafka-json-schema-serializer:7.7.0")
     compileOnly("io.confluent:kafka-protobuf-serializer:7.7.0")
     testImplementation("io.confluent:kafka-protobuf-serializer:7.7.0")
     compileOnly("com.google.protobuf:protobuf-java:3.25.4")
