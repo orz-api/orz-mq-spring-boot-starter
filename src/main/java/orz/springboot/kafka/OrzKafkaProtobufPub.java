@@ -11,8 +11,6 @@ import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Serializer;
 import org.springframework.kafka.core.KafkaTemplate;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Map;
 
 @Getter(AccessLevel.PROTECTED)
@@ -46,10 +44,9 @@ public abstract class OrzKafkaProtobufPub<E, M> extends OrzKafkaBasePub<E, M> {
             if (data == null) {
                 return null;
             }
-            try (var out = new ByteArrayOutputStream()) {
-                data.writeTo(out);
-                return out.toByteArray();
-            } catch (IOException e) {
+            try {
+                return data.toByteArray();
+            } catch (Exception e) {
                 throw new SerializationException("Error serializing Protobuf message", e);
             }
         }
