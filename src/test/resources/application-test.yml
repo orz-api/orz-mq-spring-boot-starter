@@ -7,13 +7,17 @@ spring:
     bootstrap-servers: localhost:9092
 logging:
   level:
-    root: debug
+    root: info
 orz:
   kafka:
     sub:
       TestSchemaJsonSubscribeV1Api:
         schema-registry: test
       TestSchemaProtobufSubscribeV1Api:
+        schema-registry: test
+      TestSchemaJsonDltSubscribeV1Api:
+        schema-registry: test
+      TestSchemaProtobufDltSubscribeV1Api:
         schema-registry: test
     pub:
       TestSchemaJsonPublishV1Api:
@@ -23,5 +27,8 @@ orz:
     schema-registry:
       test:
         url: http://localhost:8081
+    back-off:
+      fixed:
+        max-attempts: 1
 test:
   enable-test-container: true

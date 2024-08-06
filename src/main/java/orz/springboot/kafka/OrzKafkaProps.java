@@ -1,5 +1,6 @@
 package orz.springboot.kafka;
 
+import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -32,26 +33,17 @@ import static orz.springboot.base.description.OrzDescriptionUtils.desc;
 @ConfigurationProperties(prefix = "orz.kafka")
 @ConditionalOnClass({KafkaTemplate.class})
 public class OrzKafkaProps {
-    @NotNull
-    private BackOffType backOffType = BackOffType.FIXED;
-
-    @Valid
-    private OrzKafkaProps.BackOffFixedConfig backOffFixed = new BackOffFixedConfig();
-
-    @Valid
-    private OrzKafkaProps.BackOffExponentialConfig backOffExponential = new BackOffExponentialConfig();
-
-    @Valid
-    private OrzKafkaProps.BackOffExponentialWithMaxRetiresConfig backOffExponentialWithMaxRetires = new BackOffExponentialWithMaxRetiresConfig();
-
-    @Valid
-    private Map<String, SchemaRegistryConfig> schemaRegistry = Collections.emptyMap();
-
     @Valid
     private Map<String, SubConfig> sub = Collections.emptyMap();
 
     @Valid
     private Map<String, PubConfig> pub = Collections.emptyMap();
+
+    @Valid
+    private Map<String, SchemaRegistryConfig> schemaRegistry = Collections.emptyMap();
+
+    @Valid
+    private BackOffConfig backOff = new BackOffConfig();
 
     @EventListener
     public void onKafkaSubRunningChange(OrzKafkaSubRunningChangeEventBo event) {
@@ -65,22 +57,57 @@ public class OrzKafkaProps {
         sub = Collections.unmodifiableMap(map);
     }
 
-    public BackOff getBackOff() {
-        return switch (backOffType) {
-            case FIXED -> backOffFixed.createInstance();
-            case EXPONENTIAL -> backOffExponential.createInstance();
-            case EXPONENTIAL_WITH_MAX_RETIRES -> backOffExponentialWithMaxRetires.createInstance();
-        };
-    }
-
+    @Nullable
     public SubConfig getSub(String id) {
         return sub.get(id);
     }
 
+    @Nullable
     public PubConfig getPub(String id) {
         return pub.get(id);
     }
 
+    @Nullable
+    public PubConfig getSubDltPub(String id) {
+        var sub = getSub(id);
+        if (sub != null) {
+            var dltPub = new PubConfig(sub.getDltPub());
+            if (StringUtils.isBlank(dltPub.getBootstrapServers())) {
+                dltPub.setBootstrapServers(sub.getBootstrapServers());
+            }
+            if (StringUtils.isBlank(dltPub.getSchemaRegistry())) {
+                dltPub.setSchemaRegistry(sub.getSchemaRegistry());
+            }
+            return dltPub;
+        }
+        return null;
+    }
+
+    @Nullable
+    public SchemaRegistryConfig getSubSchemaRegistry(String id) {
+        return Optional.ofNullable(getSub(id))
+                .map(SubConfig::getSchemaRegistry)
+                .map(this::getSchemaRegistry)
+                .orElse(null);
+    }
+
+    @Nullable
+    public SchemaRegistryConfig getPubSchemaRegistry(String id) {
+        return Optional.ofNullable(getPub(id))
+                .map(PubConfig::getSchemaRegistry)
+                .map(this::getSchemaRegistry)
+                .orElse(null);
+    }
+
+    @Nullable
+    public SchemaRegistryConfig getSubDltPubSchemaRegistry(String id) {
+        return Optional.ofNullable(getSubDltPub(id))
+                .map(PubConfig::getSchemaRegistry)
+                .map(this::getSchemaRegistry)
+                .orElse(null);
+    }
+
+    @Nullable
     public SchemaRegistryConfig getSchemaRegistry(String id) {
         if (StringUtils.isBlank(id)) {
             return null;
@@ -92,18 +119,83 @@ public class OrzKafkaProps {
         return schemaRegistry.get(id);
     }
 
-    public SchemaRegistryConfig getSubSchemaRegistry(String id) {
-        return Optional.ofNullable(getSub(id))
-                .map(SubConfig::getSchemaRegistry)
-                .map(this::getSchemaRegistry)
-                .orElse(null);
+    public BackOff getSubBackOff(String id) {
+        return Optional.ofNullable(getSub(id)).map(SubConfig::getBackOff).orElse(backOff).toInstance();
     }
 
-    public SchemaRegistryConfig getPubSchemaRegistry(String id) {
-        return Optional.ofNullable(getPub(id))
-                .map(PubConfig::getSchemaRegistry)
-                .map(this::getSchemaRegistry)
-                .orElse(null);
+    @Data
+    public static class SubConfig {
+        private boolean running = true;
+
+        @Positive
+        private Integer concurrency = null;
+
+        private String bootstrapServers = null;
+
+        private String schemaRegistry = null;
+
+        @Valid
+        @NotNull
+        private PubConfig dltPub = new PubConfig();
+
+        @Valid
+        private BackOffConfig backOff = null;
+
+        public SubConfig() {
+        }
+
+        public SubConfig(SubConfig other) {
+            this.running = other.running;
+            this.concurrency = other.concurrency;
+            this.bootstrapServers = other.bootstrapServers;
+            this.schemaRegistry = other.schemaRegistry;
+            this.dltPub = other.dltPub;
+            this.backOff = other.backOff;
+        }
+    }
+
+    @Data
+    public static class PubConfig {
+        private String bootstrapServers = null;
+
+        private String schemaRegistry = null;
+
+        public PubConfig() {
+        }
+
+        public PubConfig(PubConfig other) {
+            this.bootstrapServers = other.bootstrapServers;
+            this.schemaRegistry = other.schemaRegistry;
+        }
+    }
+
+    @Data
+    public static class SchemaRegistryConfig {
+        @NotBlank
+        private String url = null;
+    }
+
+    @Data
+    public static class BackOffConfig {
+        @NotNull
+        private BackOffType type = BackOffType.FIXED;
+
+        @Valid
+        private BackOffFixedConfig fixed = new BackOffFixedConfig();
+
+        @Valid
+        private BackOffExponentialConfig exponential = new BackOffExponentialConfig();
+
+        @Valid
+        private BackOffExponentialWithMaxRetiresConfig exponentialWithMaxRetires = new BackOffExponentialWithMaxRetiresConfig();
+
+        public BackOff toInstance() {
+            return switch (type) {
+                case FIXED -> fixed.toInstance();
+                case EXPONENTIAL -> exponential.toInstance();
+                case EXPONENTIAL_WITH_MAX_RETIRES -> exponentialWithMaxRetires.toInstance();
+            };
+        }
     }
 
     public enum BackOffType {
@@ -120,7 +212,7 @@ public class OrzKafkaProps {
         @Positive
         private long maxAttempts = 5L;
 
-        public BackOff createInstance() {
+        public BackOff toInstance() {
             return new FixedBackOff(interval, maxAttempts);
         }
     }
@@ -139,7 +231,7 @@ public class OrzKafkaProps {
         @Positive
         private long maxElapsedTime = 15000L;
 
-        public BackOff createInstance() {
+        public BackOff toInstance() {
             var backOff = new ExponentialBackOff(initialInterval, multiplier);
             backOff.setMaxInterval(maxInterval);
             backOff.setMaxElapsedTime(maxElapsedTime);
@@ -161,47 +253,12 @@ public class OrzKafkaProps {
         @Positive
         private int maxRetries = 5;
 
-        public BackOff createInstance() {
+        public BackOff toInstance() {
             var backOff = new ExponentialBackOffWithMaxRetries(maxRetries);
             backOff.setInitialInterval(initialInterval);
             backOff.setMultiplier(multiplier);
             backOff.setMaxInterval(maxInterval);
             return backOff;
         }
-    }
-
-    @Data
-    public static class SchemaRegistryConfig {
-        @NotBlank
-        private String url = null;
-    }
-
-    @Data
-    public static class SubConfig {
-        private boolean running = true;
-
-        @Positive
-        private Integer concurrency = null;
-
-        private String bootstrapServers = null;
-
-        private String schemaRegistry = null;
-
-        public SubConfig() {
-        }
-
-        public SubConfig(SubConfig other) {
-            this.running = other.running;
-            this.concurrency = other.concurrency;
-            this.bootstrapServers = other.bootstrapServers;
-            this.schemaRegistry = other.schemaRegistry;
-        }
-    }
-
-    @Data
-    public static class PubConfig {
-        private String bootstrapServers = null;
-
-        private String schemaRegistry = null;
     }
 }

@@ -6,12 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import orz.springboot.mq.api.model.TestJsonEventBo;
 import orz.springboot.mq.api.model.TestProtobufEventBo;
-import orz.springboot.mq.api.model.TestSchemaJsonEventBo;
-import orz.springboot.mq.api.model.TestSchemaProtobufEventBo;
-import orz.springboot.mq.api.sub.TestJsonSubscribeV1Api;
-import orz.springboot.mq.api.sub.TestProtobufSubscribeV1Api;
-import orz.springboot.mq.api.sub.TestSchemaJsonSubscribeV1Api;
-import orz.springboot.mq.api.sub.TestSchemaProtobufSubscribeV1Api;
+import orz.springboot.mq.api.model.TestJsonSchemaEventBo;
+import orz.springboot.mq.api.model.TestProtobufSchemaEventBo;
+import orz.springboot.mq.api.sub.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,184 +22,288 @@ class AppTests {
     private OrzMqPublisher<TestJsonEventBo> testJsonPublisher;
 
     @Autowired
-    private OrzMqPublisher<TestSchemaJsonEventBo> testSchemaJsonPublisher;
+    private OrzMqPublisher<TestJsonSchemaEventBo> testSchemaJsonPublisher;
 
     @Autowired
     private OrzMqPublisher<TestProtobufEventBo> testProtobufPublisher;
 
     @Autowired
-    private OrzMqPublisher<TestSchemaProtobufEventBo> testSchemaProtobufPublisher;
+    private OrzMqPublisher<TestProtobufSchemaEventBo> testSchemaProtobufPublisher;
 
     @Autowired
     private TestJsonSubscribeV1Api testJsonSubscribeV1Api;
 
     @Autowired
-    private TestSchemaJsonSubscribeV1Api testSchemaJsonSubscribeV1Api;
+    private TestJsonSchemaSubscribeV1Api testJsonSchemaSubscribeV1Api;
 
     @Autowired
     private TestProtobufSubscribeV1Api testProtobufSubscribeV1Api;
 
     @Autowired
-    private TestSchemaProtobufSubscribeV1Api testSchemaProtobufSubscribeV1Api;
+    private TestProtobufSchemaSubscribeV1Api testProtobufSchemaSubscribeV1Api;
+
+    @Autowired
+    private TestJsonDltSubscribeV1Api testJsonDltSubscribeV1Api;
+
+    @Autowired
+    private TestJsonSchemaDltSubscribeV1Api testJsonSchemaDltSubscribeV1Api;
+
+    @Autowired
+    private TestProtobufDltSubscribeV1Api testProtobufDltSubscribeV1Api;
+
+    @Autowired
+    private TestProtobufSchemaDltSubscribeV1Api testProtobufSchemaDltSubscribeV1Api;
 
     @Test
     @SneakyThrows
     void testJson() {
-        var event1 = new TestJsonEventBo(
-                (byte) 0, new byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE},
-                (short) 0, new short[]{Short.MIN_VALUE, Short.MAX_VALUE},
-                0, new int[]{Integer.MIN_VALUE, Integer.MAX_VALUE},
-                0L, new long[]{Long.MIN_VALUE, Long.MAX_VALUE},
-                (float) 0, new float[]{Float.MIN_VALUE, Float.MAX_VALUE},
-                0, new double[]{Double.MIN_VALUE, Double.MAX_VALUE},
-                'a', new char[]{'1', '2'},
-                (byte) 0, new Byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE}, List.of(Byte.MIN_VALUE, Byte.MAX_VALUE),
-                (short) 0, new Short[]{Short.MIN_VALUE, Short.MAX_VALUE}, List.of(Short.MIN_VALUE, Short.MAX_VALUE),
-                0, new Integer[]{Integer.MIN_VALUE, Integer.MAX_VALUE}, List.of(Integer.MIN_VALUE, Integer.MAX_VALUE),
-                0L, new Long[]{Long.MIN_VALUE, Long.MAX_VALUE}, List.of(Long.MIN_VALUE, Long.MAX_VALUE),
-                (float) 0, new Float[]{Float.MIN_VALUE, Float.MAX_VALUE}, List.of(Float.MIN_VALUE, Float.MAX_VALUE),
-                (double) 0, new Double[]{Double.MIN_VALUE, Double.MAX_VALUE}, List.of(Double.MIN_VALUE, Double.MAX_VALUE),
-                'a', new Character[]{'1', '2'}, List.of('1', '2'),
-                "str", new String[]{"a1", "a2"}, List.of("l1", "l2"),
-                new TestJsonEventBo.InnerObjectBo("inner"),
-                new TestJsonEventBo.InnerObjectBo[]{
-                        new TestJsonEventBo.InnerObjectBo("inner a1"),
-                        new TestJsonEventBo.InnerObjectBo("inner a2")
-                },
-                List.of(
-                        new TestJsonEventBo.InnerObjectBo("inner l1"),
-                        new TestJsonEventBo.InnerObjectBo("inner l2")
-                ),
-                LocalDateTime.now(), LocalDate.now()
-        );
-        testJsonPublisher.publish(event1);
-        var message1 = testJsonSubscribeV1Api.takeLastMessage();
-        assertNotNull(message1);
-        assertEquals(event1.toTestJsonV1To(), message1);
-        var key1 = testJsonSubscribeV1Api.takeLastKey();
-        assertNotNull(key1);
+        // full message
+        {
+            var event = new TestJsonEventBo(
+                    (byte) 0, new byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE},
+                    (short) 0, new short[]{Short.MIN_VALUE, Short.MAX_VALUE},
+                    0, new int[]{Integer.MIN_VALUE, Integer.MAX_VALUE},
+                    0L, new long[]{Long.MIN_VALUE, Long.MAX_VALUE},
+                    (float) 0, new float[]{Float.MIN_VALUE, Float.MAX_VALUE},
+                    0, new double[]{Double.MIN_VALUE, Double.MAX_VALUE},
+                    'a', new char[]{'1', '2'},
+                    (byte) 0, new Byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE}, List.of(Byte.MIN_VALUE, Byte.MAX_VALUE),
+                    (short) 0, new Short[]{Short.MIN_VALUE, Short.MAX_VALUE}, List.of(Short.MIN_VALUE, Short.MAX_VALUE),
+                    0, new Integer[]{Integer.MIN_VALUE, Integer.MAX_VALUE}, List.of(Integer.MIN_VALUE, Integer.MAX_VALUE),
+                    0L, new Long[]{Long.MIN_VALUE, Long.MAX_VALUE}, List.of(Long.MIN_VALUE, Long.MAX_VALUE),
+                    (float) 0, new Float[]{Float.MIN_VALUE, Float.MAX_VALUE}, List.of(Float.MIN_VALUE, Float.MAX_VALUE),
+                    (double) 0, new Double[]{Double.MIN_VALUE, Double.MAX_VALUE}, List.of(Double.MIN_VALUE, Double.MAX_VALUE),
+                    'a', new Character[]{'1', '2'}, List.of('1', '2'),
+                    "str", new String[]{"a1", "a2"}, List.of("l1", "l2"),
+                    new TestJsonEventBo.InnerObjectBo("inner"),
+                    new TestJsonEventBo.InnerObjectBo[]{
+                            new TestJsonEventBo.InnerObjectBo("inner a1"),
+                            new TestJsonEventBo.InnerObjectBo("inner a2")
+                    },
+                    List.of(
+                            new TestJsonEventBo.InnerObjectBo("inner l1"),
+                            new TestJsonEventBo.InnerObjectBo("inner l2")
+                    ),
+                    LocalDateTime.now(), LocalDate.now()
+            );
+            testJsonPublisher.publish(event);
+            var message = testJsonSubscribeV1Api.takeLastMessage();
+            assertNotNull(message);
+            assertEquals(event.toTestJsonV1To(), message);
+            var key = testJsonSubscribeV1Api.takeLastKey();
+            assertNotNull(key);
+        }
 
-        var event2 = new TestJsonEventBo();
-        testJsonPublisher.publish(event2);
-        var message2 = testJsonSubscribeV1Api.takeLastMessage();
-        assertNotNull(message2);
-        assertEquals(event2.toTestJsonV1To(), message2);
-        var key2 = testJsonSubscribeV1Api.takeLastKey();
-        assertNull(key2);
+        // empty message
+        {
+            var event = new TestJsonEventBo();
+            testJsonPublisher.publish(event);
+            var message = testJsonSubscribeV1Api.takeLastMessage();
+            assertNotNull(message);
+            assertEquals(event.toTestJsonV1To(), message);
+            var key = testJsonSubscribeV1Api.takeLastKey();
+            assertNull(key);
+        }
+
+        // dlt
+        {
+            var event = new TestJsonEventBo();
+            event.setStrField("TestDlt");
+            testJsonPublisher.publish(event);
+            var message = testJsonSubscribeV1Api.takeLastMessage();
+            assertNotNull(message);
+            assertEquals(event.toTestJsonV1To(), message);
+            var key = testJsonSubscribeV1Api.takeLastKey();
+            assertNull(key);
+            var dltMessage = testJsonDltSubscribeV1Api.takeLastMessage();
+            assertNotNull(dltMessage);
+            assertEquals(event.toTestJsonV1To(), dltMessage);
+            var dltKey = testJsonDltSubscribeV1Api.takeLastKey();
+            assertNull(dltKey);
+        }
     }
 
     @Test
     @SneakyThrows
     void testSchemaJson() {
-        var event1 = new TestSchemaJsonEventBo(
-                (byte) 0, new byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE},
-                (short) 0, new short[]{Short.MIN_VALUE, Short.MAX_VALUE},
-                0, new int[]{Integer.MIN_VALUE, Integer.MAX_VALUE},
-                0L, new long[]{Long.MIN_VALUE, Long.MAX_VALUE},
-                (float) 0, new float[]{Float.MIN_VALUE, Float.MAX_VALUE},
-                0, new double[]{Double.MIN_VALUE, Double.MAX_VALUE},
-                'a', new char[]{'1', '2'},
-                (byte) 0, new Byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE}, List.of(Byte.MIN_VALUE, Byte.MAX_VALUE),
-                (short) 0, new Short[]{Short.MIN_VALUE, Short.MAX_VALUE}, List.of(Short.MIN_VALUE, Short.MAX_VALUE),
-                0, new Integer[]{Integer.MIN_VALUE, Integer.MAX_VALUE}, List.of(Integer.MIN_VALUE, Integer.MAX_VALUE),
-                0L, new Long[]{Long.MIN_VALUE, Long.MAX_VALUE}, List.of(Long.MIN_VALUE, Long.MAX_VALUE),
-                (float) 0, new Float[]{Float.MIN_VALUE, Float.MAX_VALUE}, List.of(Float.MIN_VALUE, Float.MAX_VALUE),
-                (double) 0, new Double[]{Double.MIN_VALUE, Double.MAX_VALUE}, List.of(Double.MIN_VALUE, Double.MAX_VALUE),
-                'a', new Character[]{'1', '2'}, List.of('1', '2'),
-                "str", new String[]{"a1", "a2"}, List.of("l1", "l2"),
-                new TestSchemaJsonEventBo.InnerObjectBo("inner"),
-                new TestSchemaJsonEventBo.InnerObjectBo[]{
-                        new TestSchemaJsonEventBo.InnerObjectBo("inner a1"),
-                        new TestSchemaJsonEventBo.InnerObjectBo("inner a2")
-                },
-                List.of(
-                        new TestSchemaJsonEventBo.InnerObjectBo("inner l1"),
-                        new TestSchemaJsonEventBo.InnerObjectBo("inner l2")
-                ),
-                LocalDateTime.now(), LocalDate.now()
-        );
-        testSchemaJsonPublisher.publish(event1);
-        var message1 = testSchemaJsonSubscribeV1Api.takeLastMessage();
-        assertNotNull(message1);
-        assertEquals(event1.toTestJsonV1To(), message1);
-        var key1 = testSchemaJsonSubscribeV1Api.takeLastKey();
-        assertNotNull(key1);
-        assertEquals(key1, String.valueOf(event1.getLongObjField()));
+        // full message
+        {
+            var event = new TestJsonSchemaEventBo(
+                    (byte) 0, new byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE},
+                    (short) 0, new short[]{Short.MIN_VALUE, Short.MAX_VALUE},
+                    0, new int[]{Integer.MIN_VALUE, Integer.MAX_VALUE},
+                    0L, new long[]{Long.MIN_VALUE, Long.MAX_VALUE},
+                    (float) 0, new float[]{Float.MIN_VALUE, Float.MAX_VALUE},
+                    0, new double[]{Double.MIN_VALUE, Double.MAX_VALUE},
+                    'a', new char[]{'1', '2'},
+                    (byte) 0, new Byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE}, List.of(Byte.MIN_VALUE, Byte.MAX_VALUE),
+                    (short) 0, new Short[]{Short.MIN_VALUE, Short.MAX_VALUE}, List.of(Short.MIN_VALUE, Short.MAX_VALUE),
+                    0, new Integer[]{Integer.MIN_VALUE, Integer.MAX_VALUE}, List.of(Integer.MIN_VALUE, Integer.MAX_VALUE),
+                    0L, new Long[]{Long.MIN_VALUE, Long.MAX_VALUE}, List.of(Long.MIN_VALUE, Long.MAX_VALUE),
+                    (float) 0, new Float[]{Float.MIN_VALUE, Float.MAX_VALUE}, List.of(Float.MIN_VALUE, Float.MAX_VALUE),
+                    (double) 0, new Double[]{Double.MIN_VALUE, Double.MAX_VALUE}, List.of(Double.MIN_VALUE, Double.MAX_VALUE),
+                    'a', new Character[]{'1', '2'}, List.of('1', '2'),
+                    "str", new String[]{"a1", "a2"}, List.of("l1", "l2"),
+                    new TestJsonSchemaEventBo.InnerObjectBo("inner"),
+                    new TestJsonSchemaEventBo.InnerObjectBo[]{
+                            new TestJsonSchemaEventBo.InnerObjectBo("inner a1"),
+                            new TestJsonSchemaEventBo.InnerObjectBo("inner a2")
+                    },
+                    List.of(
+                            new TestJsonSchemaEventBo.InnerObjectBo("inner l1"),
+                            new TestJsonSchemaEventBo.InnerObjectBo("inner l2")
+                    ),
+                    LocalDateTime.now(), LocalDate.now()
+            );
+            testSchemaJsonPublisher.publish(event);
+            var message = testJsonSchemaSubscribeV1Api.takeLastMessage();
+            assertNotNull(message);
+            assertEquals(event.toTestJsonV1To(), message);
+            var key = testJsonSchemaSubscribeV1Api.takeLastKey();
+            assertNotNull(key);
+            assertEquals(key, String.valueOf(event.getLongObjField()));
+        }
 
-        var event2 = new TestSchemaJsonEventBo();
-        testSchemaJsonPublisher.publish(event2);
-        var message2 = testSchemaJsonSubscribeV1Api.takeLastMessage();
-        assertNotNull(message2);
-        assertEquals(event2.toTestJsonV1To(), message2);
-        var key2 = testSchemaJsonSubscribeV1Api.takeLastKey();
-        assertNull(key2);
+        // empty message
+        {
+            var event = new TestJsonSchemaEventBo();
+            testSchemaJsonPublisher.publish(event);
+            var message = testJsonSchemaSubscribeV1Api.takeLastMessage();
+            assertNotNull(message);
+            assertEquals(event.toTestJsonV1To(), message);
+            var key = testJsonSchemaSubscribeV1Api.takeLastKey();
+            assertNull(key);
+        }
+
+        // dlt
+        {
+            var event = new TestJsonSchemaEventBo();
+            event.setStrField("TestDlt");
+            testSchemaJsonPublisher.publish(event);
+            var message = testJsonSchemaSubscribeV1Api.takeLastMessage();
+            assertNotNull(message);
+            assertEquals(event.toTestJsonV1To(), message);
+            var key = testJsonSchemaSubscribeV1Api.takeLastKey();
+            assertNull(key);
+            var dltMessage = testJsonSchemaDltSubscribeV1Api.takeLastMessage();
+            assertNotNull(dltMessage);
+            assertEquals(event.toTestJsonV1To(), dltMessage);
+            var dltKey = testJsonSchemaDltSubscribeV1Api.takeLastKey();
+            assertNull(dltKey);
+        }
     }
 
     @Test
     @SneakyThrows
     void testProtobuf() {
-        var event1 = new TestProtobufEventBo(
-                new byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE},
-                0, List.of(Integer.MIN_VALUE, Integer.MAX_VALUE),
-                0L, List.of(Long.MIN_VALUE, Long.MAX_VALUE),
-                (float) 0, List.of(Float.MIN_VALUE, Float.MAX_VALUE),
-                (double) 0, List.of(Double.MIN_VALUE, Double.MAX_VALUE),
-                "str", List.of("l1", "l2"),
-                new TestProtobufEventBo.InnerObjectBo("inner"),
-                List.of(
-                        new TestProtobufEventBo.InnerObjectBo("inner l1"),
-                        new TestProtobufEventBo.InnerObjectBo("inner l2")
-                ),
-                LocalDateTime.now(), LocalDate.now()
-        );
-        testProtobufPublisher.publish(event1);
-        var message1 = testProtobufSubscribeV1Api.takeLastMessage();
-        assertNotNull(message1);
-        assertEquals(event1.toTestProtobufV1To(), message1);
-        var key1 = testProtobufSubscribeV1Api.takeLastKey();
-        assertNotNull(key1);
-        assertEquals(key1, String.valueOf(event1.getLongField()));
+        // full message
+        {
+            var event = new TestProtobufEventBo(
+                    new byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE},
+                    0, List.of(Integer.MIN_VALUE, Integer.MAX_VALUE),
+                    0L, List.of(Long.MIN_VALUE, Long.MAX_VALUE),
+                    (float) 0, List.of(Float.MIN_VALUE, Float.MAX_VALUE),
+                    (double) 0, List.of(Double.MIN_VALUE, Double.MAX_VALUE),
+                    "str", List.of("l1", "l2"),
+                    new TestProtobufEventBo.InnerObjectBo("inner"),
+                    List.of(
+                            new TestProtobufEventBo.InnerObjectBo("inner l1"),
+                            new TestProtobufEventBo.InnerObjectBo("inner l2")
+                    ),
+                    LocalDateTime.now(), LocalDate.now()
+            );
+            testProtobufPublisher.publish(event);
+            var message = testProtobufSubscribeV1Api.takeLastMessage();
+            assertNotNull(message);
+            assertEquals(event.toTestProtobufV1To(), message);
+            var key = testProtobufSubscribeV1Api.takeLastKey();
+            assertNotNull(key);
+            assertEquals(key, String.valueOf(event.getLongField()));
+        }
 
-        var event2 = new TestProtobufEventBo();
-        testProtobufPublisher.publish(event2);
-        var message2 = testProtobufSubscribeV1Api.takeLastMessage();
-        assertNotNull(message2);
-        assertEquals(event2.toTestProtobufV1To(), message2);
-        var key2 = testProtobufSubscribeV1Api.takeLastKey();
-        assertNull(key2);
+        // empty message
+        {
+            var event = new TestProtobufEventBo();
+            testProtobufPublisher.publish(event);
+            var message = testProtobufSubscribeV1Api.takeLastMessage();
+            assertNotNull(message);
+            assertEquals(event.toTestProtobufV1To(), message);
+            var key = testProtobufSubscribeV1Api.takeLastKey();
+            assertNull(key);
+        }
+
+        // dlt
+        {
+            var event = new TestProtobufEventBo();
+            event.setStrField("TestDlt");
+            testProtobufPublisher.publish(event);
+            var message = testProtobufSubscribeV1Api.takeLastMessage();
+            assertNotNull(message);
+            assertEquals(event.toTestProtobufV1To(), message);
+            var key = testProtobufSubscribeV1Api.takeLastKey();
+            assertNull(key);
+            var dltMessage = testProtobufDltSubscribeV1Api.takeLastMessage();
+            assertNotNull(dltMessage);
+            assertEquals(event.toTestProtobufV1To(), dltMessage);
+            var dltKey = testProtobufDltSubscribeV1Api.takeLastKey();
+            assertNull(dltKey);
+        }
     }
 
     @Test
     @SneakyThrows
     void testSchemaProtobuf() {
-        var event1 = new TestSchemaProtobufEventBo(
-                new byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE},
-                0, List.of(Integer.MIN_VALUE, Integer.MAX_VALUE),
-                0L, List.of(Long.MIN_VALUE, Long.MAX_VALUE),
-                (float) 0, List.of(Float.MIN_VALUE, Float.MAX_VALUE),
-                (double) 0, List.of(Double.MIN_VALUE, Double.MAX_VALUE),
-                "str", List.of("l1", "l2"),
-                new TestSchemaProtobufEventBo.InnerObjectBo("inner"),
-                List.of(
-                        new TestSchemaProtobufEventBo.InnerObjectBo("inner l1"),
-                        new TestSchemaProtobufEventBo.InnerObjectBo("inner l2")
-                ),
-                LocalDateTime.now(), LocalDate.now()
-        );
-        testSchemaProtobufPublisher.publish(event1);
-        var message1 = testSchemaProtobufSubscribeV1Api.takeLastMessage();
-        assertNotNull(message1);
-        assertEquals(event1.toTestProtobufV1To(), message1);
-        var key1 = testSchemaProtobufSubscribeV1Api.takeLastKey();
-        assertNotNull(key1);
-        assertEquals(key1, String.valueOf(event1.getLongField()));
+        // full message
+        {
+            var event = new TestProtobufSchemaEventBo(
+                    new byte[]{Byte.MIN_VALUE, Byte.MAX_VALUE},
+                    0, List.of(Integer.MIN_VALUE, Integer.MAX_VALUE),
+                    0L, List.of(Long.MIN_VALUE, Long.MAX_VALUE),
+                    (float) 0, List.of(Float.MIN_VALUE, Float.MAX_VALUE),
+                    (double) 0, List.of(Double.MIN_VALUE, Double.MAX_VALUE),
+                    "str", List.of("l1", "l2"),
+                    new TestProtobufSchemaEventBo.InnerObjectBo("inner"),
+                    List.of(
+                            new TestProtobufSchemaEventBo.InnerObjectBo("inner l1"),
+                            new TestProtobufSchemaEventBo.InnerObjectBo("inner l2")
+                    ),
+                    LocalDateTime.now(), LocalDate.now()
+            );
+            testSchemaProtobufPublisher.publish(event);
+            var message = testProtobufSchemaSubscribeV1Api.takeLastMessage();
+            assertNotNull(message);
+            assertEquals(event.toTestProtobufV1To(), message);
+            var key = testProtobufSchemaSubscribeV1Api.takeLastKey();
+            assertNotNull(key);
+            assertEquals(key, String.valueOf(event.getLongField()));
+        }
 
-        var event2 = new TestSchemaProtobufEventBo();
-        testSchemaProtobufPublisher.publish(event2);
-        var message2 = testSchemaProtobufSubscribeV1Api.takeLastMessage();
-        assertNotNull(message2);
-        assertEquals(event2.toTestProtobufV1To(), message2);
-        var key2 = testSchemaProtobufSubscribeV1Api.takeLastKey();
-        assertNull(key2);
+        // empty message
+        {
+            var event = new TestProtobufSchemaEventBo();
+            testSchemaProtobufPublisher.publish(event);
+            var message = testProtobufSchemaSubscribeV1Api.takeLastMessage();
+            assertNotNull(message);
+            assertEquals(event.toTestProtobufV1To(), message);
+            var key = testProtobufSchemaSubscribeV1Api.takeLastKey();
+            assertNull(key);
+        }
+
+        // dlt
+        {
+            var event = new TestProtobufSchemaEventBo();
+            event.setStrField("TestDlt");
+            testSchemaProtobufPublisher.publish(event);
+            var message = testProtobufSchemaSubscribeV1Api.takeLastMessage();
+            assertNotNull(message);
+            assertEquals(event.toTestProtobufV1To(), message);
+            var key = testProtobufSchemaSubscribeV1Api.takeLastKey();
+            assertNull(key);
+            var dltMessage = testProtobufSchemaDltSubscribeV1Api.takeLastMessage();
+            assertNotNull(dltMessage);
+            assertEquals(event.toTestProtobufV1To(), dltMessage);
+            var dltKey = testProtobufSchemaDltSubscribeV1Api.takeLastKey();
+            assertNull(dltKey);
+        }
     }
 }

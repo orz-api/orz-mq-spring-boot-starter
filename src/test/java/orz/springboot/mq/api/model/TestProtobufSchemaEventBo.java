@@ -15,7 +15,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TestSchemaProtobufEventBo {
+public class TestProtobufSchemaEventBo {
     private byte[] bytesField;
 
     private Integer intField;

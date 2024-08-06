@@ -8,8 +8,8 @@ import orz.springboot.mq.api.model.TestProtobufV1To;
 import java.util.Optional;
 
 @SuppressWarnings("OptionalAssignedToNull")
-@OrzSubApi(topic = "test-schema-protobuf")
-public class TestSchemaProtobufSubscribeV1Api extends OrzKafkaProtobufSub<TestProtobufV1To> {
+@OrzSubApi(topic = "test-protobuf-schema.DLT.orz-mq-spring-boot-starter-test")
+public class TestProtobufSchemaDltSubscribeV1Api extends OrzKafkaProtobufSub<TestProtobufV1To> {
     private Optional<TestProtobufV1To> lastMessage;
     private Optional<String> lastKey;
 

@@ -19,6 +19,9 @@ public class TestProtobufSubscribeV1Api extends OrzKafkaProtobufSub<TestProtobuf
             lastMessage = Optional.ofNullable(message);
             lastKey = Optional.ofNullable(extra.getKey());
             this.notifyAll();
+            if (message != null && "TestDlt".equals(message.getStrField())) {
+                throw new RuntimeException("TestDlt");
+            }
         }
     }
 

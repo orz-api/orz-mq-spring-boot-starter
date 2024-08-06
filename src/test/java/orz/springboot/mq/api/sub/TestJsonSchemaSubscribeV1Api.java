@@ -8,8 +8,8 @@ import orz.springboot.mq.api.model.TestJsonV1To;
 import java.util.Optional;
 
 @SuppressWarnings("OptionalAssignedToNull")
-@OrzSubApi(topic = "test-schema-json")
-public class TestSchemaJsonSubscribeV1Api extends OrzKafkaJsonSub<TestJsonV1To> {
+@OrzSubApi(topic = "test-json-schema")
+public class TestJsonSchemaSubscribeV1Api extends OrzKafkaJsonSub<TestJsonV1To> {
     private Optional<TestJsonV1To> lastMessage;
     private Optional<String> lastKey;
 
@@ -19,6 +19,9 @@ public class TestSchemaJsonSubscribeV1Api extends OrzKafkaJsonSub<TestJsonV1To> 
             lastMessage = Optional.ofNullable(message);
             lastKey = Optional.ofNullable(extra.getKey());
             this.notifyAll();
+            if (message != null && "TestDlt".equals(message.getStrField())) {
+                throw new RuntimeException("TestDlt");
+            }
         }
     }
 

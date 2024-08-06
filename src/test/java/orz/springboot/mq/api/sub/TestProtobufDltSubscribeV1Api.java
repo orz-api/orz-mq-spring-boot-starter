@@ -1,31 +1,28 @@
 package orz.springboot.mq.api.sub;
 
-import orz.springboot.kafka.OrzKafkaJsonSub;
+import orz.springboot.kafka.OrzKafkaProtobufSub;
 import orz.springboot.kafka.OrzKafkaSubExtra;
 import orz.springboot.mq.annotation.OrzSubApi;
-import orz.springboot.mq.api.model.TestJsonV1To;
+import orz.springboot.mq.api.model.TestProtobufV1To;
 
 import java.util.Optional;
 
 @SuppressWarnings("OptionalAssignedToNull")
-@OrzSubApi(topic = "test-json")
-public class TestJsonSubscribeV1Api extends OrzKafkaJsonSub<TestJsonV1To> {
-    private Optional<TestJsonV1To> lastMessage;
+@OrzSubApi(topic = "test-protobuf.DLT.orz-mq-spring-boot-starter-test")
+public class TestProtobufDltSubscribeV1Api extends OrzKafkaProtobufSub<TestProtobufV1To> {
+    private Optional<TestProtobufV1To> lastMessage;
     private Optional<String> lastKey;
 
     @Override
-    protected void subscribe(TestJsonV1To message, OrzKafkaSubExtra<TestJsonV1To> extra) {
+    protected void subscribe(TestProtobufV1To message, OrzKafkaSubExtra<TestProtobufV1To> extra) {
         synchronized (this) {
             lastMessage = Optional.ofNullable(message);
             lastKey = Optional.ofNullable(extra.getKey());
             this.notifyAll();
-            if (message != null && "TestDlt".equals(message.getStrField())) {
-                throw new RuntimeException("TestDlt");
-            }
         }
     }
 
-    public synchronized TestJsonV1To takeLastMessage() {
+    public synchronized TestProtobufV1To takeLastMessage() {
         if (lastMessage == null) {
             try {
                 this.wait(5000);

@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TestSchemaJsonEventBo {
+public class TestJsonSchemaEventBo {
     private byte byteField;
     private byte[] byteArrayField;
 

@@ -7,14 +7,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Headers;
-import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
+import orz.springboot.kafka.OrzKafkaProps.PubConfig;
 import orz.springboot.mq.OrzMqBeanInitContext;
 import orz.springboot.mq.OrzMqPub;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -38,21 +36,17 @@ public abstract class OrzKafkaBasePub<E, M> extends OrzMqPub<E, M> {
         this.props = context.getApplicationContext().getBean(OrzKafkaProps.class);
 
         if (this.kafkaTemplate == null) {
-            var defaultProducerFactory = (DefaultKafkaProducerFactory<?, ?>) context.getApplicationContext().getBean(DefaultKafkaProducerFactory.class);
-            var producerConfigs = new HashMap<>(defaultProducerFactory.getConfigurationProperties());
-
-            var bootstrapServers = Optional.ofNullable(this.props.getPub(getId())).map(OrzKafkaProps.PubConfig::getBootstrapServers).orElse(null);
-            if (StringUtils.isNotBlank(bootstrapServers)) {
-                producerConfigs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-            }
-            producerConfigs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-            setProducerConfigs(producerConfigs);
-
-            this.kafkaTemplate = new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(producerConfigs));
+            this.kafkaTemplate = OrzKafkaUtils.createKafkaTemplate(context, configs -> {
+                var bootstrapServers = Optional.ofNullable(props.getPub(getId())).map(PubConfig::getBootstrapServers).orElse(null);
+                if (StringUtils.isNotBlank(bootstrapServers)) {
+                    configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+                }
+                configureProducer(configs);
+            });
         }
     }
 
-    protected abstract void setProducerConfigs(Map<String, Object> configs);
+    protected abstract void configureProducer(Map<String, Object> configs);
 
     protected CompletableFuture<Void> publishMessage(M message) {
         return publishMessage(message, null);
