@@ -4,10 +4,7 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import orz.springboot.mq.api.model.TestJsonEventBo;
-import orz.springboot.mq.api.model.TestProtobufEventBo;
-import orz.springboot.mq.api.model.TestJsonSchemaEventBo;
-import orz.springboot.mq.api.model.TestProtobufSchemaEventBo;
+import orz.springboot.mq.api.model.*;
 import orz.springboot.mq.api.sub.*;
 
 import java.time.LocalDate;
@@ -29,6 +26,9 @@ class AppTests {
 
     @Autowired
     private OrzMqPublisher<TestProtobufSchemaEventBo> testSchemaProtobufPublisher;
+
+    @Autowired
+    private OrzMqPublisher<TestStringEventBo> testStringPublisher;
 
     @Autowired
     private TestJsonSubscribeV1Api testJsonSubscribeV1Api;
@@ -53,6 +53,12 @@ class AppTests {
 
     @Autowired
     private TestProtobufSchemaDltSubscribeV1Api testProtobufSchemaDltSubscribeV1Api;
+
+    @Autowired
+    private TestStringSubscribeV1Api testStringSubscribeV1Api;
+
+    @Autowired
+    private TestStringDltSubscribeV1Api testStringDltSubscribeV1Api;
 
     @Test
     @SneakyThrows
@@ -304,6 +310,40 @@ class AppTests {
             assertEquals(event.toTestProtobufV1To(), dltMessage);
             var dltKey = testProtobufSchemaDltSubscribeV1Api.takeLastKey();
             assertNull(dltKey);
+        }
+    }
+
+    @Test
+    @SneakyThrows
+    void testString() {
+        // full message
+        {
+            var event = new TestStringEventBo("key1", "message1");
+            testStringPublisher.publish(event);
+            var message = testStringSubscribeV1Api.takeLastMessage();
+            assertNotNull(message);
+            assertEquals(event.getMessage(), message);
+            var key = testStringSubscribeV1Api.takeLastKey();
+            assertNotNull(key);
+            assertEquals(event.getKey(), key);
+        }
+
+        // dlt
+        {
+            var event = new TestStringEventBo("key2", "TestDlt");
+            testStringPublisher.publish(event);
+            var message = testStringSubscribeV1Api.takeLastMessage();
+            assertNotNull(message);
+            assertEquals(event.getMessage(), message);
+            var key = testStringSubscribeV1Api.takeLastKey();
+            assertNotNull(key);
+            assertEquals(event.getKey(), key);
+            var dltMessage = testStringDltSubscribeV1Api.takeLastMessage();
+            assertNotNull(dltMessage);
+            assertEquals(event.getMessage(), dltMessage);
+            var dltKey = testStringDltSubscribeV1Api.takeLastKey();
+            assertNotNull(dltKey);
+            assertEquals(event.getKey(), dltKey);
         }
     }
 }
