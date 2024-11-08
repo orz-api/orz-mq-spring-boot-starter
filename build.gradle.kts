@@ -2,13 +2,13 @@ plugins {
     signing
     `java-library`
     `maven-publish`
-    id("org.springframework.boot") version "3.3.2"
+    id("org.springframework.boot") version "3.3.5"
     id("io.spring.dependency-management") version "1.1.6"
     id("com.google.protobuf") version "0.9.4"
 }
 
 group = "io.github.orz-api"
-version = "0.0.2-SNAPSHOT"
+version = "0.0.3-SNAPSHOT"
 
 java {
     toolchain {
@@ -41,7 +41,7 @@ repositories {
 }
 
 dependencies {
-    api("io.github.orz-api:orz-base-spring-boot-starter:0.0.2-SNAPSHOT")
+    api("io.github.orz-api:orz-base-spring-boot-starter:0.0.3-SNAPSHOT")
 
     compileOnly("org.springframework.kafka:spring-kafka")
     testImplementation("org.springframework.kafka:spring-kafka")
