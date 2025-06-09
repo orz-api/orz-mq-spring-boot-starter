@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "io.github.orz-api"
-version = "0.0.3-SNAPSHOT"
+version = "0.0.3"
 
 java {
     toolchain {
@@ -31,17 +31,21 @@ configurations {
 }
 
 repositories {
+    maven {
+        name = "Central Portal Snapshots"
+        url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+        content {
+            includeVersionByRegex(".*", ".*", ".*SNAPSHOT")
+        }
+    }
     mavenCentral()
     maven {
         url = uri("https://packages.confluent.io/maven/")
     }
-    maven {
-        url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-    }
 }
 
 dependencies {
-    api("io.github.orz-api:orz-base-spring-boot-starter:0.0.3-SNAPSHOT")
+    api("io.github.orz-api:orz-base-spring-boot-starter:0.0.3")
 
     compileOnly("org.springframework.kafka:spring-kafka")
     testImplementation("org.springframework.kafka:spring-kafka")
@@ -89,6 +93,7 @@ publishing {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
             pom {
+                name = "orz-mq-spring-boot-starter"
                 description = "orz-api mq spring boot starter"
                 url = "https://github.com/orz-api/orz-mq-spring-boot-starter"
                 licenses {
@@ -115,14 +120,14 @@ publishing {
     repositories {
         maven {
             url = uri(
-                    if (version.toString().endsWith("SNAPSHOT")) "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-                    else "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                if (version.toString().endsWith("SNAPSHOT")) "https://central.sonatype.com/repository/maven-snapshots/"
+                else "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"
             )
             credentials {
-                val orzOssrhUsername: String by project
-                val orzOssrhPassword: String by project
-                username = orzOssrhUsername
-                password = orzOssrhPassword
+                val orzSonatypeUsername: String by project
+                val orzSonatypePassword: String by project
+                username = orzSonatypeUsername
+                password = orzSonatypePassword
             }
         }
     }
